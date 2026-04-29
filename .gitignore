@@ -17,3 +17,8 @@ desktop.ini
 # Apps Script local clasp artifacts (if anyone uses clasp to mirror this)
 .clasp.json
 .clasprc.json
+
+# Client-internal source documents (kept locally, not pushed)
+chat.md
+project_status&plan.md
+*.pdf
