@@ -1,0 +1,2 @@
+ReportID,ProjectID,ReportDate,SuperintendentID,PreparedByEmail,WeatherTemp,WeatherConditions,WorksafeInspectionToday,SiteInspectionDoneToday,FieldLevelHazardUpToDate,NextToolboxMeeting,NotableEvents,Status,SubmittedAt,ReviewedAt,ReviewedByEmail,PdfFileID,CreatedAt,ModifiedAt
+RPT-2026-04-30-PRJ-001,PRJ-001,2026-04-30,USR-001,super@modeprojects.ca,12,Sunny with light cloud,FALSE,TRUE,TRUE,2026-05-05,Smoke test seed report,Draft,,,,,2026-04-30 00:00:00,2026-04-30 00:00:00

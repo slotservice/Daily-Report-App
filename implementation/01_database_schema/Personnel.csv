@@ -1,0 +1,4 @@
+PersonnelID,FullName,Role,Email,Phone,Active
+PER-001,Mode Crew Member 1,Carpenter,crew1@modeprojects.ca,250-101-0001,TRUE
+PER-002,Mode Crew Member 2,Labourer,crew2@modeprojects.ca,250-101-0002,TRUE
+PER-003,Mode Crew Member 3,Foreman,crew3@modeprojects.ca,250-101-0003,TRUE

@@ -1,0 +1,6 @@
+TradeID,TradeName,CompanyName,ContactName,ContactEmail,ContactPhone,Active
+TRD-001,Concrete,ABC Concrete Ltd,Joe Smith,joe@abcconcrete.example,250-111-1111,TRUE
+TRD-002,Framing,Northwest Framing Inc,Jane Doe,jane@nwframing.example,250-222-2222,TRUE
+TRD-003,Electrical,Volt Electric,Pat Lee,pat@volt.example,250-333-3333,TRUE
+TRD-004,Plumbing,Aqua Plumbing,Sam Park,sam@aqua.example,250-444-4444,TRUE
+TRD-005,HVAC,CoolAir Mech,Lee Wong,lee@coolair.example,250-555-5555,TRUE

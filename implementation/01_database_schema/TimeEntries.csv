@@ -1,0 +1,4 @@
+TimeEntryID,ReportID,PersonnelID,Hours,Notes
+TE-001,RPT-2026-04-30-PRJ-001,PER-001,8,Form work
+TE-002,RPT-2026-04-30-PRJ-001,PER-002,8,Form work
+TE-003,RPT-2026-04-30-PRJ-001,PER-003,9,Foreman + concrete pour

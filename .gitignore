@@ -1,0 +1,19 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*~
+
+# Local-only secrets / generated files
+*.local
+*.env
+.env.*
+
+# Apps Script local clasp artifacts (if anyone uses clasp to mirror this)
+.clasp.json
+.clasprc.json

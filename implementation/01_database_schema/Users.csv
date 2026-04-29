@@ -1,0 +1,5 @@
+UserID,FullName,Email,Role,Phone,Active,CreatedAt
+USR-001,Site Super Seed,super@modeprojects.ca,SiteSuperintendent,250-000-0001,TRUE,2026-04-30 00:00:00
+USR-002,PM Seed,pm@modeprojects.ca,ProjectManager,250-000-0002,TRUE,2026-04-30 00:00:00
+USR-003,Evan Heitman,evan@modeprojects.ca,Director,250-580-4770,TRUE,2026-04-30 00:00:00
+USR-004,Coordinator Seed,coord@modeprojects.ca,Coordinator,250-000-0004,TRUE,2026-04-30 00:00:00

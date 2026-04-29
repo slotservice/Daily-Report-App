@@ -1,0 +1,2 @@
+TaskID,ProjectID,Description,StartDate,Status,CompletedDate,OriginReportID,CreatedByEmail,CreatedAt
+TSK-001,PRJ-001,Pour footings on east elevation,2026-04-29,In Progress,,RPT-2026-04-29-PRJ-001,super@modeprojects.ca,2026-04-29 00:00:00

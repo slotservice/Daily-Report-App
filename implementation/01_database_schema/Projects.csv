@@ -1,0 +1,2 @@
+ProjectID,ProjectCode,ProjectName,Address,StartDate,EndDate,Active,SuperintendentID,SuperintendentEmail,PMID,PMEmail,DirectorID,DirectorEmail,CoordinatorID,CoordinatorEmail,LogoFileID,Notes
+PRJ-001,XXXX,XXXX - Project Name,"123 Sample St, Victoria BC",2026-02-01,2026-12-31,TRUE,USR-001,super@modeprojects.ca,USR-002,pm@modeprojects.ca,USR-003,evan@modeprojects.ca,USR-004,coord@modeprojects.ca,,Seed project for smoke testing

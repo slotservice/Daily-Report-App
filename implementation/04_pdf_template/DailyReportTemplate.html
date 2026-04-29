@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Mode Projects — Daily Site Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* This HTML is the visual reference for the Google Doc template.
+     It is also rendered by Apps-Script HtmlService for the standalone
+     web preview path (admin-only, see PdfGenerator.gs).                  */
+
+  :root {
+    --navy: #1A2E45;
+    --gold: #D4B98C;
+    --ink:  #1B1B1B;
+    --rule: #C9CBD0;
+    --soft: #F5F4EF;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Montserrat', sans-serif;
+    color: var(--ink);
+    font-size: 10.5pt;
+    line-height: 1.45;
+    background: #fff;
+  }
+  .page { width: 8.5in; min-height: 11in; padding: 0 0 0.5in 0; margin: 0 auto; }
+
+  header.brand {
+    background: var(--navy);
+    color: #fff;
+    padding: 14px 0.5in;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  header.brand .logo {
+    width: 38px; height: 38px;
+    background: var(--gold);
+    border-radius: 4px;
+  }
+  header.brand .wordmark {
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    font-size: 14pt;
+  }
+  header.brand .wordmark .sub {
+    font-weight: 400;
+    letter-spacing: 0.32em;
+    font-size: 9pt;
+    color: var(--gold);
+    display: block;
+    margin-top: 2px;
+  }
+
+  .title-row {
+    padding: 18px 0.5in 6px 0.5in;
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .title-row h1 { font-size: 16pt; font-weight: 600; margin: 0; }
+  .title-row .date-pill {
+    border: 1px solid var(--rule);
+    padding: 4px 10px; font-size: 9pt;
+    background: var(--soft);
+  }
+
+  h2.project {
+    margin: 6px 0.5in 12px 0.5in;
+    font-size: 11.5pt; font-weight: 700;
+  }
+
+  section { padding: 0 0.5in; margin-bottom: 14px; }
+  section.boxed { border: 1px solid var(--rule); padding: 0; margin: 0 0.5in 14px 0.5in; }
+  section.boxed > .row { display: grid; grid-template-columns: 180px 1fr; border-bottom: 1px solid var(--rule); }
+  section.boxed > .row:last-child { border-bottom: 0; }
+  section.boxed > .row > .k {
+    background: var(--soft);
+    padding: 8px 12px;
+    font-weight: 600;
+    border-right: 1px solid var(--rule);
+  }
+  section.boxed > .row > .v { padding: 8px 12px; }
+  section.boxed > .row.head > .k {
+    background: var(--navy); color: #fff; font-weight: 700; font-size: 11pt;
+    grid-column: 1 / span 2; border-right: 0;
+  }
+
+  table.grid { width: 100%; border-collapse: collapse; }
+  table.grid th, table.grid td {
+    border: 1px solid var(--rule);
+    padding: 6px 8px;
+    font-size: 10pt;
+    vertical-align: top;
+  }
+  table.grid th {
+    background: var(--soft);
+    font-weight: 600;
+    text-align: left;
+  }
+
+  ul.bullets { margin: 4px 0 4px 16px; padding: 0; }
+  ul.bullets li { margin: 2px 0; }
+
+  .photo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .photo-grid figure { margin: 0; border: 1px solid var(--rule); padding: 6px; background: #fff; }
+  .photo-grid img { width: 100%; height: auto; display: block; }
+  .photo-grid figcaption { font-size: 9pt; color: #555; margin-top: 4px; font-style: italic; }
+
+  footer.gen {
+    padding: 16px 0.5in 0 0.5in;
+    font-size: 8.5pt; color: #777;
+    border-top: 1px solid var(--rule);
+    margin-top: 18px;
+    display: flex; justify-content: space-between;
+  }
+
+  /* Page-break hints for the PDF renderer */
+  section, table { page-break-inside: avoid; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="brand">
+    <div class="logo"></div>
+    <div class="wordmark">MODE<span class="sub">PROJECTS</span></div>
+  </header>
+
+  <div class="title-row">
+    <h1>Daily Site Report</h1>
+    <div class="date-pill">Date: &lt;&lt;ReportDate&gt;&gt;</div>
+  </div>
+  <h2 class="project">Project: &lt;&lt;ProjectCode&gt;&gt; — &lt;&lt;ProjectName&gt;&gt;</h2>
+
+  <!-- General Information -->
+  <section class="boxed">
+    <div class="row head"><div class="k">General Information</div></div>
+    <div class="row"><div class="k">Superintendent</div><div class="v">&lt;&lt;Superintendent&gt;&gt;</div></div>
+    <div class="row"><div class="k">Report Prepared by</div><div class="v">&lt;&lt;PreparedBy&gt;&gt;</div></div>
+    <div class="row"><div class="k">Weather</div><div class="v">&lt;&lt;WeatherTemp&gt;&gt; &lt;&lt;WeatherConditions&gt;&gt;</div></div>
+    <div class="row"><div class="k">Mode Team Members</div><div class="v">[[CREW_TABLE]]
+      <table class="grid"><thead><tr><th>Crew Member</th><th>Hours</th><th>Notes</th></tr></thead>
+        <tbody><tr><td>(seed)</td><td>0</td><td></td></tr></tbody>
+      </table>
+    </div></div>
+    <div class="row"><div class="k">Trades on Site Today</div><div class="v">[[TRADES_TABLE]]
+      <table class="grid"><thead><tr><th>Trade</th><th># Workers</th><th>Notes</th></tr></thead>
+        <tbody><tr><td>(seed)</td><td>0</td><td></td></tr></tbody>
+      </table>
+    </div></div>
+  </section>
+
+  <!-- Tasks -->
+  <section class="boxed">
+    <div class="row head"><div class="k">Tasks Started Today</div></div>
+    <div class="row"><div class="k" style="grid-column:1/span 2;background:#fff;border-right:0;">[[TASKS_STARTED_TABLE]]
+      <table class="grid"><thead><tr><th>Task</th><th>Start Date</th></tr></thead>
+        <tbody><tr><td>(seed)</td><td></td></tr></tbody>
+      </table>
+    </div></div>
+  </section>
+
+  <section class="boxed">
+    <div class="row head"><div class="k">Tasks Still in Progress (carried forward)</div></div>
+    <div class="row"><div class="k" style="grid-column:1/span 2;background:#fff;border-right:0;">[[TASKS_INPROGRESS_TABLE]]
+      <table class="grid"><thead><tr><th>Task</th><th>Start Date</th></tr></thead>
+        <tbody><tr><td>(seed)</td><td></td></tr></tbody>
+      </table>
+    </div></div>
+  </section>
+
+  <section class="boxed">
+    <div class="row head"><div class="k">Tasks Completed Today</div></div>
+    <div class="row"><div class="k" style="grid-column:1/span 2;background:#fff;border-right:0;">[[TASKS_COMPLETED_TABLE]]
+      <table class="grid"><thead><tr><th>Task</th><th>Completed Date</th></tr></thead>
+        <tbody><tr><td>(seed)</td><td></td></tr></tbody>
+      </table>
+    </div></div>
+  </section>
+
+  <!-- Equipment / Rentals / Visitors / Deliveries -->
+  <section class="boxed">
+    <div class="row head"><div class="k">Equipment On Site</div></div>
+    <div class="row"><div class="k" style="grid-column:1/span 2;background:#fff;border-right:0;">[[EQUIPMENT_TABLE]]
+      <table class="grid"><thead><tr><th>Equipment</th><th>Trade</th><th>Comments</th></tr></thead>
+        <tbody><tr><td>(seed)</td><td></td><td></td></tr></tbody>
+      </table>
+    </div></div>
+  </section>
+
+  <section class="boxed">
+    <div class="row head"><div class="k">Rentals On Site</div></div>
+    <div class="row"><div class="k" style="grid-column:1/span 2;background:#fff;border-right:0;">[[RENTALS_TABLE]]
+      <table class="grid"><thead><tr><th>Description</th><th>PO #</th><th>Supplier</th></tr></thead>
+        <tbody><tr><td>(seed)</td><td></td><td></td></tr></tbody>
+      </table>
+    </div></div>
+  </section>
+
+  <section class="boxed">
+    <div class="row head"><div class="k">Visitors On Site</div></div>
+    <div class="row"><div class="k" style="grid-column:1/span 2;background:#fff;border-right:0;">[[VISITORS_TABLE]]
+      <table class="grid"><thead><tr><th>Company</th><th>Purpose</th><th># People</th></tr></thead>
+        <tbody><tr><td>(seed)</td><td></td><td></td></tr></tbody>
+      </table>
+    </div></div>
+  </section>
+
+  <section class="boxed">
+    <div class="row head"><div class="k">Deliveries</div></div>
+    <div class="row"><div class="k" style="grid-column:1/span 2;background:#fff;border-right:0;">[[DELIVERIES_TABLE]]
+      <table class="grid"><thead><tr><th>PO #</th><th>Supplier</th><th>Description</th></tr></thead>
+        <tbody><tr><td>(seed)</td><td></td><td></td></tr></tbody>
+      </table>
+    </div></div>
+  </section>
+
+  <!-- Safety -->
+  <section class="boxed">
+    <div class="row head"><div class="k">Safety</div></div>
+    <div class="row"><div class="k">Worksafe Inspection Today?</div><div class="v">&lt;&lt;WorksafeInspection&gt;&gt;</div></div>
+    <div class="row"><div class="k">Site Inspection Done Today?</div><div class="v">&lt;&lt;SiteInspection&gt;&gt;</div></div>
+    <div class="row"><div class="k">Field Level Hazard Assessments Up to Date?</div><div class="v">&lt;&lt;FieldLevelHazard&gt;&gt;</div></div>
+    <div class="row"><div class="k">Next Scheduled Toolbox Meeting</div><div class="v">&lt;&lt;NextToolboxMeeting&gt;&gt;</div></div>
+  </section>
+
+  <!-- Notable Events -->
+  <section class="boxed">
+    <div class="row head"><div class="k">Notable Events / Day Summary</div></div>
+    <div class="row"><div class="k" style="grid-column:1/span 2;background:#fff;border-right:0;padding:10px 12px;">&lt;&lt;NotableEvents&gt;&gt;</div></div>
+  </section>
+
+  <!-- Photos -->
+  <section>
+    <h3 style="margin:18px 0 8px 0;font-size:11.5pt;">Photos</h3>
+    [[PHOTOS_GRID]]
+  </section>
+
+  <footer class="gen">
+    <span>Generated &lt;&lt;GeneratedAt&gt;&gt;</span>
+    <span>Status: &lt;&lt;Status&gt;&gt; • Total Crew Hrs: &lt;&lt;TotalHours&gt;&gt;</span>
+  </footer>
+
+</div>
+</body>
+</html>
