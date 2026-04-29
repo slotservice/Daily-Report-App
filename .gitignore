@@ -22,3 +22,8 @@ desktop.ini
 chat.md
 project_status&plan.md
 *.pdf
+
+# Builder-internal working docs (kept locally, not pushed)
+docs/GUIDE_FOR_BUILDER.md
+docs/IMPLEMENTATION_LOG.md
+docs/ANALYSIS.md
