@@ -1,0 +1,6 @@
+UserID,FullName,Email,Role,Phone,Active,CreatedAt
+USR-001,Evan Heitman,evan@modeprojects.ca,"Director,SiteSuperintendent,Admin",250-580-4770,TRUE,2026-04-30 00:00:00
+USR-002,John Hughes,john@modeprojects.ca,ProjectManager,,TRUE,2026-04-30 00:00:00
+USR-003,Mary-Ann Nyal,mary-ann@modeprojects.ca,Coordinator,,TRUE,2026-04-30 00:00:00
+USR-004,James McCaul,james@modeprojects.ca,SiteSuperintendent,,TRUE,2026-04-30 00:00:00
+USR-005,Sam Dick,sam@modeprojects.ca,SiteSuperintendent,,TRUE,2026-04-30 00:00:00

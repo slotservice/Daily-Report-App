@@ -22,6 +22,9 @@ desktop.ini
 chat.md
 project_status&plan.md
 *.pdf
+# Source asset filenames as supplied by client (the bundled copy lives
+# under implementation/04_pdf_template/assets/ and IS pushed)
+MODEPROJECTS_LogoSmall_Blue-02.png
 
 # Builder-internal working docs (kept locally, not pushed)
 docs/GUIDE_FOR_BUILDER.md

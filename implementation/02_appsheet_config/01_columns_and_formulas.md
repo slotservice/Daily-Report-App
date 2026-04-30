@@ -17,13 +17,13 @@ Legend: `K` = Key, `L` = Label, `H` = Hidden in form by default. Empty cells = A
 | StartDate | Date |  | `TODAY()` |  |
 | EndDate | Date |  |  | Show_If: `ISNOTBLANK([StartDate])` |
 | Active | Yes/No |  | `TRUE` |  |
-| SuperintendentID | Ref → Users |  |  | Valid_If: `FILTER("Users", [Role] = "SiteSuperintendent")` |
+| SuperintendentID | Ref → Users |  |  | Valid_If: `FILTER("Users", IN("SiteSuperintendent", [Role]))` |
 | SuperintendentEmail | Email |  | `LOOKUP([SuperintendentID], "Users", "UserID", "Email")` | Editable_If: `FALSE` |
-| PMID | Ref → Users |  |  | Valid_If: `FILTER("Users", [Role] = "ProjectManager")` |
+| PMID | Ref → Users |  |  | Valid_If: `FILTER("Users", IN("ProjectManager", [Role]))` |
 | PMEmail | Email |  | `LOOKUP([PMID], "Users", "UserID", "Email")` | Editable_If: `FALSE` |
-| DirectorID | Ref → Users |  |  | Valid_If: `FILTER("Users", [Role] = "Director")` |
+| DirectorID | Ref → Users |  |  | Valid_If: `FILTER("Users", IN("Director", [Role]))` |
 | DirectorEmail | Email |  | `LOOKUP([DirectorID], "Users", "UserID", "Email")` | Editable_If: `FALSE` |
-| CoordinatorID | Ref → Users |  |  | Valid_If: `FILTER("Users", [Role] = "Coordinator")` |
+| CoordinatorID | Ref → Users |  |  | Valid_If: `FILTER("Users", IN("Coordinator", [Role]))` |
 | CoordinatorEmail | Email |  | `LOOKUP([CoordinatorID], "Users", "UserID", "Email")` | Editable_If: `FALSE` |
 | LogoFileID | Text |  |  | Drive file ID for project-specific logo override |
 | Notes | LongText |  |  |  |
@@ -41,7 +41,7 @@ Legend: `K` = Key, `L` = Label, `H` = Hidden in form by default. Empty cells = A
 | UserID | Text | K | `"USR-" & TEXT(COUNT(Users[UserID])+1, "000")` |  |
 | FullName | Name | L |  | Required |
 | Email | Email |  |  | Required, unique. Valid_If: `NOT(IN([Email], Users[Email] - LIST([_THISROW].[Email])))` |
-| Role | Enum |  |  | Values: `SiteSuperintendent, ProjectManager, Director, Coordinator, Admin`. Base type Text. Required |
+| Role | EnumList |  |  | Values: `SiteSuperintendent, ProjectManager, Director, Coordinator, Admin`. Base type Text. Required. **EnumList (not Enum)** so a single user can hold multiple roles — e.g. Evan Heitman is both Director (on every project) and Site Superintendent (on 2610). |
 | Phone | Phone |  |  |  |
 | Active | Yes/No |  | `TRUE` |  |
 | CreatedAt | DateTime |  | `NOW()` | Editable_If: `FALSE` |

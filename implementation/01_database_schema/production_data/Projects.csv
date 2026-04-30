@@ -1,0 +1,5 @@
+ProjectID,ProjectCode,ProjectName,Address,StartDate,EndDate,Active,SuperintendentID,SuperintendentEmail,PMID,PMEmail,DirectorID,DirectorEmail,CoordinatorID,CoordinatorEmail,LogoFileID,Notes
+PRJ-001,2603,Athlone Roof Overhang,"1974 Athlone Road, Ucluelet BC",,,TRUE,USR-004,james@modeprojects.ca,USR-002,john@modeprojects.ca,USR-001,evan@modeprojects.ca,USR-003,mary-ann@modeprojects.ca,,
+PRJ-002,2609,Fourth Street Washroom,"Fourth Street Right of Way, Tofino BC",,,TRUE,USR-005,sam@modeprojects.ca,USR-002,john@modeprojects.ca,USR-001,evan@modeprojects.ca,USR-003,mary-ann@modeprojects.ca,,
+PRJ-003,2610,Galvin Place Shop,"1873 Galvin Place, Qualicum Beach BC",,,TRUE,USR-001,evan@modeprojects.ca,USR-002,john@modeprojects.ca,USR-001,evan@modeprojects.ca,USR-003,mary-ann@modeprojects.ca,,
+PRJ-004,2510,Tofino Gas Bar Upgrade,"797 Campbell Street, Tofino BC",,,TRUE,USR-004,james@modeprojects.ca,USR-002,john@modeprojects.ca,USR-001,evan@modeprojects.ca,USR-003,mary-ann@modeprojects.ca,,

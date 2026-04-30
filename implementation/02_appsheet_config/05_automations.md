@@ -126,14 +126,14 @@ https://www.appsheet.com/start/<<APP_ID>>#view=Report Detail (Manager)&row=<<[Re
 
 ---
 
-## Bot 3 (optional): `Daily-Reminder-At-1700`
+## Bot 3: `Daily-Reminder-At-0900-NextDay`
 
-A nightly nudge to any superintendent who hasn't submitted a report for any of their active projects.
+A morning nudge to any superintendent who failed to submit **yesterday's** report for any of their active projects. Per client confirmation (2026-04-30): fires at 09:00 the day after the missing report, not at 17:00 same-day.
 
 **Trigger:**
 - Event type: `Schedule`
-- Schedule: Daily at 17:00 in the project timezone
-- For each row in: `Projects[My_Projects]` where `[Active] = TRUE`
+- Schedule: Daily at 09:00 `America/Vancouver`
+- For each row in: `Projects` filtered by `[Active] = TRUE`
 - Condition:
   ```
   ISBLANK(
@@ -141,13 +141,35 @@ A nightly nudge to any superintendent who hasn't submitted a report for any of t
       DailyReports[ReportID],
       AND(
         [ProjectID] = [_THISROW].[ProjectID],
-        [ReportDate] = TODAY(),
+        [ReportDate] = TODAY() - 1,
         [Status] IN LIST("Submitted","Reviewed")
       )
     )
   )
   ```
 
-**Step:** send an email to `[SuperintendentEmail]` reminding them.
+**Process step — Send email:**
+- To: `[SuperintendentEmail]`
+- Cc: `[PMEmail]`
+- Subject:
+  ```
+  CONCATENATE(
+    "Reminder — missing daily report for ",
+    [ProjectName],
+    " (",
+    TEXT(TODAY() - 1, "YYYY-MM-DD"),
+    ")"
+  )
+  ```
+- Body:
+  ```
+  Hi <<LOOKUP([SuperintendentEmail],"Users","Email","FullName")>>,
 
-> **Default deployment:** disabled. Enable only after the client confirms cadence.
+  We don't yet have a submitted daily report for <<[ProjectName]>> for <<TEXT(TODAY()-1,"YYYY-MM-DD")>>.
+
+  Please open the app and submit it as soon as possible. If yesterday was a non-working day on this site, you can ignore this reminder.
+
+  — Mode Projects Daily Reports
+  ```
+
+> **Default deployment:** ENABLED. Per client request 2026-04-30.

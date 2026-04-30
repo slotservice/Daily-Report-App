@@ -93,13 +93,28 @@ If you switch to the Apps-Script renderer (`PdfGenerator.gs`), the syntax is *di
 
 You can keep both sets of markers in the same Doc — AppSheet ignores `[[…]]` sentinels and Apps Script ignores AppSheet's `<<…>>` syntax — but only **one** rendering path will run for any given report.
 
-## 7. Logo swap
+## 7. Logo
 
-When Evan provides the brand graphics:
-1. Upload the logo PNG to the `REPORTS_ROOT_FOLDER_ID` Drive folder.
-2. In the Doc, replace the gold square placeholder with `Insert → Image → Drive → <selected logo>`.
-3. Resize to ~38×38 px, anchor to the navy header table cell.
-4. Optionally update `CONFIG.BRAND_LOGO_FILE_ID` in `Config.gs`.
+The brand logo is bundled at `assets/MODEPROJECTS_Logo.png` (provided by
+Evan on 2026-04-30 — navy hex/M wordmark on transparent background).
+
+To wire it into the Doc template:
+
+1. Upload `assets/MODEPROJECTS_Logo.png` to your `_Templates` Drive
+   folder (or anywhere in your Drive that's reachable from the Doc).
+2. In the Doc, position the cursor at the top-left of the navy header
+   band. `Insert → Image → Drive → MODEPROJECTS_Logo.png`.
+3. Resize to ~40 px tall, anchor in the header band, set wrap to
+   "In line with text" so it stays put when the template repeats.
+4. Delete the placeholder gold square that came with the original
+   header layout.
+5. Optionally set `CONFIG.BRAND_LOGO_FILE_ID` in `03_apps_script/Config.gs`
+   to the Drive file ID of the uploaded logo (lets the Apps-Script
+   fallback path embed the same logo when it renders).
+
+> The logo is also referenced from `04_pdf_template/DailyReportTemplate.html`
+> for the local HTML preview path. No change needed there — it imports via
+> the same relative `assets/` path.
 
 ## 8. Sanity test
 
