@@ -53,7 +53,7 @@ Legend: `K` = Key, `L` = Label, `H` = Hidden in form by default. Empty cells = A
 | Column | Type | K/L/H | Initial value | Valid_If / Show_If / notes |
 |---|---|---|---|---|
 | ReportID | Text | K | `"RPT-" & TEXT([ReportDate],"YYYY-MM-DD") & "-" & [ProjectID]` | Read-only after create |
-| ProjectID | Ref → Projects |  | (passed in from view) | Required. Valid_If: `FILTER("Projects", AND([Active] = TRUE, OR(LOOKUP(USEREMAIL(),"Users","Email","Role")="Admin", USEREMAIL() = [SuperintendentEmail])))` |
+| ProjectID | Ref → Projects |  | (passed in from view) | Required. Valid_If: `FILTER("Projects", AND([Active] = TRUE, OR(IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role")), USEREMAIL() = [SuperintendentEmail])))` |
 | ReportDate | Date |  | `TODAY()` | Required. Valid_If: prevents duplicate same-day reports: `NOT(IN([_THIS], SELECT(DailyReports[ReportDate], AND([ProjectID] = [_THISROW].[ProjectID], [ReportID] <> [_THISROW].[ReportID]))))` |
 | SuperintendentID | Ref → Users |  | `LOOKUP([ProjectID], "Projects", "ProjectID", "SuperintendentID")` | Editable_If: `FALSE` |
 | PreparedByEmail | Email |  | `USEREMAIL()` | Editable_If: `FALSE` |
@@ -258,12 +258,16 @@ SELECT(
 ```
 
 ```
-# Lock after review (DailyReports table-level Update_If)
+# Lock after review (simple form — table-level Update_If)
+# Note: the full canonical lock-after-review expression lives in
+# 06_security.md and is more granular (separates super / manager / admin
+# rights). This simple form is a useful shorthand for understanding the
+# core invariant: Reviewed is read-only for everyone except Admin.
 AND(
   [Status] <> "Reviewed",
   OR(
     USEREMAIL() = LOOKUP([ProjectID], "Projects", "ProjectID", "SuperintendentEmail"),
-    LOOKUP(USEREMAIL(), "Users", "Email", "Role") = "Admin"
+    IN("Admin", LOOKUP(USEREMAIL(), "Users", "Email", "Role"))
   )
 )
 ```

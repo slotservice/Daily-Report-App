@@ -17,11 +17,13 @@ Configured in **Security → Require Sign-In**, **Security → Roles**, and per-
 
 Set on each table in **Data → Tables → [TableName] → Are updates allowed?**
 
+> **Note on EnumList:** because `Users.Role` is an `EnumList`, `LOOKUP(USEREMAIL(),"Users","Email","Role")` returns a list, not a string. Always use `IN("RoleName", <list>)` rather than `<list> = "RoleName"` or `<list> IN LIST(...)`.
+
 | Table | Adds | Updates | Deletes |
 |---|---|---|---|
-| Projects | `LOOKUP(USEREMAIL(),"Users","Email","Role") = "Admin"` | same | same |
-| Users | `LOOKUP(USEREMAIL(),"Users","Email","Role") = "Admin"` | same | same |
-| DailyReports | `LOOKUP(USEREMAIL(),"Users","Email","Role") IN LIST("SiteSuperintendent","Admin")` | see expression below | `LOOKUP(USEREMAIL(),"Users","Email","Role") = "Admin"` |
+| Projects | `IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role"))` | same | same |
+| Users | `IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role"))` | same | same |
+| DailyReports | `OR(IN("SiteSuperintendent", LOOKUP(USEREMAIL(),"Users","Email","Role")), IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role")))` | see expression below | `IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role"))` |
 | Tasks | superintendent of project or Admin | superintendent of project or Admin | Admin only |
 | ReportTrades / Equipment / Rentals / Visitors / Deliveries / Photos / TimeEntries | superintendent of parent report **AND** parent `[Status] <> "Reviewed"` | same | same |
 | Trades / Personnel / ProjectTrades / ProjectPersonnel | Admin only | Admin only | Admin only |
@@ -37,14 +39,14 @@ AND(
       [Status] IN LIST("Draft","Submitted")
     ),
     AND(
-      USEREMAIL() IN LIST(
+      IN(USEREMAIL(), LIST(
         LOOKUP([ProjectID],"Projects","ProjectID","PMEmail"),
         LOOKUP([ProjectID],"Projects","ProjectID","DirectorEmail"),
         LOOKUP([ProjectID],"Projects","ProjectID","CoordinatorEmail")
-      ),
+      )),
       [Status] = "Submitted"
     ),
-    LOOKUP(USEREMAIL(),"Users","Email","Role") = "Admin"
+    IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role"))
   )
 )
 ```
@@ -70,7 +72,7 @@ LOOKUP([ReportID], "DailyReports", "ReportID", "Status") <> "Reviewed"
 
 | Table.Column | `Editable_If` |
 |---|---|
-| DailyReports.Status | `LOOKUP(USEREMAIL(),"Users","Email","Role") = "Admin"` (otherwise Status only changes via actions) |
+| DailyReports.Status | `IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role"))` (otherwise Status only changes via actions) |
 | DailyReports.SubmittedAt / ReviewedAt / ReviewedByEmail / PdfFileID | `FALSE` (system-managed) |
 | Projects.SuperintendentEmail / PMEmail / DirectorEmail / CoordinatorEmail | `FALSE` (auto-derived via LOOKUP from the Ref column) |
 | Tasks.CompletedDate | `[Status] = "Completed"` |

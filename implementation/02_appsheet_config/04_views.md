@@ -2,17 +2,16 @@
 
 AppSheet view layout for each role. Each view is created in **UX → Views**.
 
-The app uses a **role-pivoted home view** — when the user signs in, AppSheet routes them to the right deck via the `App start expression`:
+The app uses a **role-pivoted home view** — when the user signs in, AppSheet routes them to the right deck via the `App start expression`. Because `Users.Role` is an EnumList (a single user can hold multiple roles), we use `IFS()` with `IN()` checks rather than `SWITCH()` so the first matching role wins. The order is intentional: a user who is both Director and SiteSuperintendent (e.g. Evan) lands on the Director Dashboard, since reviewing across projects is the senior role.
 
 ```
-SWITCH(
-  LOOKUP(USEREMAIL(), "Users", "Email", "Role"),
-  "SiteSuperintendent", LINKTOVIEW("Super Home"),
-  "ProjectManager",     LINKTOVIEW("Manager Inbox"),
-  "Director",           LINKTOVIEW("Director Dashboard"),
-  "Coordinator",        LINKTOVIEW("Manager Inbox"),
-  "Admin",              LINKTOVIEW("Admin Console"),
-  LINKTOVIEW("Manager Inbox")
+IFS(
+  IN("Director",           LOOKUP(USEREMAIL(), "Users", "Email", "Role")), LINKTOVIEW("Director Dashboard"),
+  IN("ProjectManager",     LOOKUP(USEREMAIL(), "Users", "Email", "Role")), LINKTOVIEW("Manager Inbox"),
+  IN("Coordinator",        LOOKUP(USEREMAIL(), "Users", "Email", "Role")), LINKTOVIEW("Manager Inbox"),
+  IN("SiteSuperintendent", LOOKUP(USEREMAIL(), "Users", "Email", "Role")), LINKTOVIEW("Super Home"),
+  IN("Admin",              LOOKUP(USEREMAIL(), "Users", "Email", "Role")), LINKTOVIEW("Admin Console"),
+  TRUE,                                                                     LINKTOVIEW("Manager Inbox")
 )
 ```
 
@@ -27,7 +26,7 @@ SWITCH(
   - `My Projects` (Card view of `My_Projects` slice)
   - `Today's Report` (Detail view, see below)
   - `Tasks Still In Progress` (Deck of `Tasks_InProgress_For_Project` filtered by selected project)
-- **Show if:** `LOOKUP(USEREMAIL(),"Users","Email","Role") = "SiteSuperintendent"`
+- **Show if:** `IN("SiteSuperintendent", LOOKUP(USEREMAIL(),"Users","Email","Role"))`
 
 ### View: `Today's Report` (Detail)
 - **Type:** Detail
@@ -72,7 +71,7 @@ SWITCH(
 - **Main:** ProjectName • ReportDate
 - **Subtitle:** "Submitted " & TEXT(SubmittedAt, "YYYY-MM-DD HH:MM")
 - **Action on tap:** open `Report Detail (Manager)`
-- **Show if:** `LOOKUP(USEREMAIL(),"Users","Email","Role") IN LIST("ProjectManager","Coordinator")`
+- **Show if:** `OR(IN("ProjectManager", LOOKUP(USEREMAIL(),"Users","Email","Role")), IN("Coordinator", LOOKUP(USEREMAIL(),"Users","Email","Role")))`
 
 ### View: `Report Detail (Manager)` (Detail)
 - **Type:** Detail
@@ -93,7 +92,7 @@ SWITCH(
   - `Pending Review` (Deck of `Reports_Pending_Review`)
   - `All Projects KPI` (Chart — count of reports by Status grouped by ProjectName)
   - `Reviewed This Week` (Table of `Reports_Visible_To_Me` filtered to `[ReviewedAt] >= TODAY() - 7`)
-- **Show if:** `LOOKUP(USEREMAIL(),"Users","Email","Role") = "Director"`
+- **Show if:** `IN("Director", LOOKUP(USEREMAIL(),"Users","Email","Role"))`
 
 ---
 
@@ -106,7 +105,7 @@ SWITCH(
   - `Users` (Table of `Users`)
   - `Projects` (Table of `Projects`)
   - `Trades`, `Personnel` masters
-- **Show if:** `LOOKUP(USEREMAIL(),"Users","Email","Role") = "Admin"`
+- **Show if:** `IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role"))`
 
 ---
 

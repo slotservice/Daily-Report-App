@@ -15,7 +15,7 @@ Create each slice in **Data → Slices → Add new slice**.
     [Status] <> "Reviewed",
     OR(
       USEREMAIL() = LOOKUP([ProjectID], "Projects", "ProjectID", "SuperintendentEmail"),
-      LOOKUP(USEREMAIL(), "Users", "Email", "Role") = "Admin"
+      IN("Admin", LOOKUP(USEREMAIL(), "Users", "Email", "Role"))
     )
   )
   ```
@@ -49,7 +49,7 @@ Create each slice in **Data → Slices → Add new slice**.
     USEREMAIL() = LOOKUP([ProjectID], "Projects", "ProjectID", "PMEmail"),
     USEREMAIL() = LOOKUP([ProjectID], "Projects", "ProjectID", "DirectorEmail"),
     USEREMAIL() = LOOKUP([ProjectID], "Projects", "ProjectID", "CoordinatorEmail"),
-    LOOKUP(USEREMAIL(), "Users", "Email", "Role") = "Admin"
+    IN("Admin", LOOKUP(USEREMAIL(), "Users", "Email", "Role"))
   )
   ```
 - **Slice actions:** Reads only
@@ -85,7 +85,7 @@ Create each slice in **Data → Slices → Add new slice**.
       USEREMAIL() = [PMEmail],
       USEREMAIL() = [DirectorEmail],
       USEREMAIL() = [CoordinatorEmail],
-      LOOKUP(USEREMAIL(), "Users", "Email", "Role") = "Admin"
+      IN("Admin", LOOKUP(USEREMAIL(), "Users", "Email", "Role"))
     )
   )
   ```
@@ -98,7 +98,10 @@ Create each slice in **Data → Slices → Add new slice**.
   ```
   AND(
     [Status] = "Submitted",
-    LOOKUP(USEREMAIL(), "Users", "Email", "Role") IN LIST("Director", "Admin")
+    OR(
+      IN("Director", LOOKUP(USEREMAIL(), "Users", "Email", "Role")),
+      IN("Admin", LOOKUP(USEREMAIL(), "Users", "Email", "Role"))
+    )
   )
   ```
 - **Used by:** Director's cross-project review dashboard.

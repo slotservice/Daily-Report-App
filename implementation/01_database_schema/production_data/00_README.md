@@ -17,7 +17,8 @@ with seed data, in the master Google Sheet:
 | `Personnel` | Delete seed rows. Paste in the 1 row from `Personnel.csv` (Sam Dick). Add more crew as Evan supplies them. |
 | `ProjectPersonnel` | Delete seed rows. Paste in the 2 rows from `ProjectPersonnel.csv` (Sam Dick on 2603 and 2510). |
 | `DailyReports`, `Tasks`, `ReportTrades`, `Equipment`, `Rentals`, `Visitors`, `Deliveries`, `Photos`, `TimeEntries` | Delete every seed row — these are per-day records that Evan's team will create going forward. Leave the tab with headers only. |
-| `Trades`, `ProjectTrades` | Keep the seed entries as placeholders. Per Evan's instruction (2026-04-30): "trades and crew are constantly fluctuating, I'll enter as we go. Use placeholders for testing." |
+| `Trades` | Keep the 5 seed rows (TRD-001..TRD-005) as a placeholder master list. Evan will edit / extend later. |
+| `ProjectTrades` | **Delete every seed row.** They linked seed `PRJ-001` (the original "XXXX" placeholder project) to seed trades — but production `PRJ-001` is now "2603 Athlone", so those rows would become misleading silent assignments. Clear the tab to headers-only and leave it empty until Evan starts assigning trades to projects as crew show up on site. |
 
 ## Quick reference — who's who
 

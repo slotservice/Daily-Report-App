@@ -43,7 +43,7 @@ Actions are the buttons users tap. Configure each in **Behavior → Actions**.
       USEREMAIL() = LOOKUP([ProjectID],"Projects","ProjectID","PMEmail"),
       USEREMAIL() = LOOKUP([ProjectID],"Projects","ProjectID","DirectorEmail"),
       USEREMAIL() = LOOKUP([ProjectID],"Projects","ProjectID","CoordinatorEmail"),
-      LOOKUP(USEREMAIL(),"Users","Email","Role") = "Admin"
+      IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role"))
     )
   )
   ```
@@ -66,7 +66,7 @@ Actions are the buttons users tap. Configure each in **Behavior → Actions**.
     [Status] <> "Completed",
     OR(
       USEREMAIL() = LOOKUP([ProjectID],"Projects","ProjectID","SuperintendentEmail"),
-      LOOKUP(USEREMAIL(),"Users","Email","Role") = "Admin"
+      IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role"))
     )
   )
   ```
@@ -117,7 +117,7 @@ Actions are the buttons users tap. Configure each in **Behavior → Actions**.
 - **Display name:** Re-send Report Email
 - **For a record of this table:** `DailyReports`
 - **Do this:** `External: invoke an external service` → triggers a webhook to Apps Script `EmailDispatch.gs` (used only if the AppSheet-native email path fails)
-- **Only if:** `LOOKUP(USEREMAIL(),"Users","Email","Role") = "Admin"`
+- **Only if:** `IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role"))`
 - **Prominence:** Hidden from the form; surfaced on the admin detail view only.
 
 ## Action 7: `Recall to Draft` (DailyReports — admin only)
@@ -128,5 +128,5 @@ Actions are the buttons users tap. Configure each in **Behavior → Actions**.
   - `SubmittedAt` ← `""`
   - `ReviewedAt` ← `""`
   - `ReviewedByEmail` ← `""`
-- **Only if:** `LOOKUP(USEREMAIL(),"Users","Email","Role") = "Admin"`
+- **Only if:** `IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role"))`
 - **Confirmation:** Yes — "Recalling will unlock this report and allow edits. Continue?"
