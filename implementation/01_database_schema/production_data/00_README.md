@@ -37,6 +37,19 @@ with seed data, in the master Google Sheet:
 | PRJ-003 | 2610 | Galvin Place Shop | Evan (USR-001) | John | Evan | Mary-Ann |
 | PRJ-004 | 2510 | Tofino Gas Bar Upgrade | James (USR-004) | John | Evan | Mary-Ann |
 
+## Project coordinates (for auto-weather)
+
+The `Latitude` / `Longitude` columns on `Projects.csv` are pre-filled with
+**town-centre coordinates**, accurate enough for Open-Meteo's ~10 km
+weather grid. Refine to actual site coordinates if Evan supplies them.
+
+| Project | Town | Lat | Long | Source |
+|---|---|---|---|---|
+| PRJ-001 Athlone | Ucluelet | 48.9335 | -125.5409 | Town centre |
+| PRJ-002 4th St Washroom | Tofino | 49.1535 | -125.9072 | Town centre |
+| PRJ-003 Galvin Shop | Qualicum Beach | 49.3393 | -124.4419 | Town centre |
+| PRJ-004 Tofino Gas Bar | Tofino | 49.1493 | -125.9072 | Campbell St area |
+
 ## Sam Dick's dual identity
 
 Sam appears in two tables on purpose:

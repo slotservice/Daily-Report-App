@@ -14,6 +14,8 @@ Legend: `K` = Key, `L` = Label, `H` = Hidden in form by default. Empty cells = A
 | ProjectCode | Text |  |  | Required |
 | ProjectName | Text | L |  | Required |
 | Address | Address |  |  |  |
+| Latitude | Decimal |  |  | Required. Used by the auto-weather webhook (Bot 4) to fetch current conditions from Open-Meteo. Range: -90 to 90. Town-centre coords are accurate enough for the ~10 km weather grid; refine to actual site coords if available. |
+| Longitude | Decimal |  |  | Required. Same as above. Range: -180 to 180. |
 | StartDate | Date |  | `TODAY()` |  |
 | EndDate | Date |  |  | Show_If: `ISNOTBLANK([StartDate])` |
 | Active | Yes/No |  | `TRUE` |  |
@@ -57,8 +59,8 @@ Legend: `K` = Key, `L` = Label, `H` = Hidden in form by default. Empty cells = A
 | ReportDate | Date |  | `TODAY()` | Required. Valid_If: prevents duplicate same-day reports: `NOT(IN([_THIS], SELECT(DailyReports[ReportDate], AND([ProjectID] = [_THISROW].[ProjectID], [ReportID] <> [_THISROW].[ReportID]))))` |
 | SuperintendentID | Ref → Users |  | `LOOKUP([ProjectID], "Projects", "ProjectID", "SuperintendentID")` | Editable_If: `FALSE` |
 | PreparedByEmail | Email |  | `USEREMAIL()` | Editable_If: `FALSE` |
-| WeatherTemp | Number |  |  | Required. Show as °C |
-| WeatherConditions | Text |  |  | Required. Suggested values: `Sunny, Cloudy, Overcast, Light Rain, Heavy Rain, Snow, Wind, Fog` |
+| WeatherTemp | Number |  |  | **Auto-filled by Bot 4** from Open-Meteo using the project's Lat/Long shortly after the report row is created. Show as °C. Editable by super (manual override always wins — Bot 4 only writes when this column is blank). Required at submit time, not at create time — see Save & Submit `Only_If` in `03_actions.md`. |
+| WeatherConditions | Enum |  |  | **Auto-filled by Bot 4** from Open-Meteo's WMO weather code → label mapping. Editable by super. Required at submit time, not at create time. Values: `Sunny, Cloudy, Overcast, Light Rain, Heavy Rain, Snow, Wind, Fog`. Base type Text. |
 | WorksafeInspectionToday | Yes/No |  | `FALSE` | Required |
 | SiteInspectionDoneToday | Yes/No |  | `FALSE` | Required |
 | FieldLevelHazardUpToDate | Yes/No |  | `TRUE` | Required |

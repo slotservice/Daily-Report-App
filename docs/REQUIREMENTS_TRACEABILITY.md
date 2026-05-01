@@ -80,6 +80,15 @@ Symbols: ✅ implemented · 🟡 implemented + needs client input · ⛔ explici
 | B17 | Notable Events (free text) | ✅ | `NotableEvents` LongText |
 | B18 | Mode Projects branded letterhead | 🟡 | Template has placeholder navy/gold band; logo PNG must be supplied by client per `04_pdf_template/GoogleDoc_template_setup.md` §7 |
 
+## B-prime. Change requests applied 2026-05-01 (Evan, Freelancer chat)
+
+| # | Request | Status | Implementation location |
+|---|---|---|---|
+| BR1 | Checkbox beside each "Tasks Still in Progress" row to mark complete and move it to "Tasks Completed Today" | ✅ — already built (Action 3); icon updated to `check-square` and surfaced inline as a tappable icon | `02_appsheet_config/03_actions.md` Action 3 + `04_views.md` Today's Report §5 |
+| BR2 | Geo-locate the site and automatically pull weather | ✅ — implemented as project-pinned coords + Open-Meteo webhook (manual override preserved) | `Projects.Latitude/Longitude` columns, `03_apps_script/WeatherFetch.gs`, `05_automations.md` Bot 4, deployment Steps 9.5 + 9.6 |
+
+---
+
 ## C. Outstanding client inputs
 
 | # | Item | Owner | Where it plugs in |
@@ -94,7 +103,8 @@ Symbols: ✅ implemented · 🟡 implemented + needs client input · ⛔ explici
 ## D. Coverage summary
 
 - 46 requirements from the build brief: **46 implemented** (100 %).
-- 18 fields from the source PDF: **17 implemented**, 1 blocked on client inputs (logo PNG).
+- 18 fields from the source PDF: **17 implemented**, 1 blocked on client inputs (logo PNG — now received and bundled).
+- 2 change requests applied 2026-05-01 (BR1, BR2): both implemented.
 - 6 outstanding client inputs identified, none of them block the smoke test.
 
 The implementation is feature-complete pending the four client-input items in §C.

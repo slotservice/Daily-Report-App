@@ -117,6 +117,40 @@ Test Bot 1 by editing the seed DailyReports row's `Status` from `Draft` → `Sub
 
 ---
 
+## Step 9.5 — Deploy WeatherFetch.gs as a web app
+
+This step gives Bot 4 a URL to call. It depends on Step 11 (Apps Script project created), so do Step 11 first if you haven't, then come back here.
+
+1. In the Apps Script editor, confirm `WeatherFetch.gs` is present alongside `Config.gs`, `SheetReader.gs`, `PdfGenerator.gs`, `EmailDispatch.gs`. If not, copy it in from `implementation/03_apps_script/WeatherFetch.gs`.
+2. `appsscript.json` already includes the `script.external_request` OAuth scope (needed for the Open-Meteo API call) and `spreadsheets` (needed for the write-back). No edits required.
+3. `Deploy → Manage deployments → Edit (pencil)` on the existing web-app deployment from Step 11 → `New version` → `Deploy`. (If you haven't deployed yet, `Deploy → New deployment → Web app`. Execute as **Me**, access **Anyone with the link**.)
+4. Copy the deployment URL. It looks like `https://script.google.com/macros/s/AKfy.../exec`.
+5. Paste it into `Config.gs` `WEATHER_WEBHOOK_URL` for completeness, then save.
+6. Sanity test: in Apps Script, run the function `fetchAndApplyWeather('RPT-2026-04-30-PRJ-001', 'PRJ-001')` from the editor. First run will prompt for OAuth — accept. Confirm the seed DailyReports row's `WeatherTemp` and `WeatherConditions` populate in the master Sheet.
+
+✓ **Outcome:** webhook URL captured; manual test populates weather on the seed report row.
+
+---
+
+## Step 9.6 — Create Bot 4 (auto-weather on report create)
+
+`Automation → Bots → New bot`. Configure per `02_appsheet_config/05_automations.md` Bot 4:
+
+1. Trigger: `DailyReports` adds-only, with the `ISBLANK([WeatherTemp]) AND ISBLANK([WeatherConditions])` condition.
+2. Process step: `Call a webhook`. Paste the URL from Step 9.5. POST, content-type `application/json`, body:
+   ```
+   {
+     "reportId": "<<[ReportID]>>",
+     "projectId": "<<[ProjectID]>>"
+   }
+   ```
+3. Test: as the seed superintendent, sign in to the AppSheet preview, tap **Start Today's Report** for any project (delete the existing seed RPT row first if needed), save the form. Within ~30 s, sync — `WeatherTemp` and `WeatherConditions` should appear prefilled.
+4. Manual-override test: create another report; immediately type `WeatherTemp = 99` before sync settles. Confirm Bot 4 leaves the `99` alone (the "only write if blank" check in `WeatherFetch.gs` enforces this).
+
+✓ **Outcome:** Bot 4 active. New reports prefill weather automatically.
+
+---
+
 ## Step 10 — Security & sign-in
 
 Apply every rule in `02_appsheet_config/06_security.md`:
@@ -134,11 +168,12 @@ Apply every rule in `02_appsheet_config/06_security.md`:
 ## Step 11 — Apps Script fallback (optional but recommended)
 
 1. In the master Sheet, `Extensions → Apps Script`. A blank project opens.
-2. Copy in the four files from `implementation/03_apps_script/`:
-   - `Config.gs` — fill in `SHEET_ID`, `TEMPLATE_DOC_ID`, `REPORTS_ROOT_FOLDER_ID`.
+2. Copy in the five files from `implementation/03_apps_script/`:
+   - `Config.gs` — fill in `SHEET_ID`, `TEMPLATE_DOC_ID`, `REPORTS_ROOT_FOLDER_ID`. `WEATHER_WEBHOOK_URL` is filled in later (Step 9.5) once this script is deployed.
    - `SheetReader.gs`
    - `PdfGenerator.gs`
    - `EmailDispatch.gs`
+   - `WeatherFetch.gs` — auto-weather webhook (consumed by Bot 4 in Step 9.6).
    - `appsscript.json` — copy via `Project Settings → Show appsscript.json`.
 3. `Deploy → New deployment → Web app`. Execute as **the deployer**, who has access **anyone**. Copy the deployment URL.
 4. In AppSheet, the optional Action 6 (`Re-send Report Email`) calls this URL with `{ reportId: <ReportID>, dispatchEmail: true }`.
@@ -206,3 +241,5 @@ After the PM marks Reviewed:
 | Repeating table renders only once | Missing `<<Start:>> ... <<End>>` pair | Re-add inside row 2; the START token must be the first thing in the cell |
 | Carry-forward shows completed tasks | `Status` not exactly `"Completed"` | Confirm Enum values are `In Progress` and `Completed` (no whitespace) |
 | Manager can't Mark as Reviewed | Email not in `Users` table | Add the row; AppSheet rejects unknown sign-ins |
+| Bot 4 fires but weather stays blank | Project missing Lat/Long, OR webhook URL not pasted into the bot, OR Open-Meteo blocked by network egress | Apps Script `View → Executions` shows the error. Most common: paste the webhook URL into Bot 4 step config. Second most common: fill Lat/Long on the Projects row. |
+| Bot 4 overwrites super's manual values | Should not happen — `WeatherFetch.gs` only writes when fields are blank | Verify the `if (!tempIsBlank && !condIsBlank) return ...` branch wasn't edited away in `WeatherFetch.gs` |

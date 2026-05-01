@@ -71,6 +71,9 @@ Actions are the buttons users tap. Configure each in **Behavior → Actions**.
   )
   ```
 - **Prominence:** Inline on the Tasks Still in Progress reference list inside today's report.
+- **Display style:** Display as `Icon` (not button) so it appears as a single tappable check beside each task — visually reads as a checkbox.
+- **Icon:** `check-square` (an empty square with a check). On tap the row's Status flips to `"Completed"` and `CompletedDate` to `TODAY()`, which immediately moves it from "Tasks Still in Progress" to "Tasks Completed Today" via the existing virtual-column filters.
+- **Behavior on tap:** No confirmation prompt — the action is one-tap-fast, and a misclick is fully recoverable by editing `Status` back to `"In Progress"` (Admin) or by the super if the report is still Draft / Submitted.
 
 ## Action 4: `Add Started Task` (DailyReports → Tasks; Action_Type: nav-add)
 

@@ -22,6 +22,13 @@ const CONFIG = {
   EMAIL_FROM_NAME: 'Mode Projects Daily Reports',
   EMAIL_REPLY_TO: 'evan@modeprojects.ca',
 
+  // WeatherFetch.gs — webhook URL of THIS Apps Script project's web-app
+  // deployment. Filled in after running Deploy → New deployment → Web app.
+  // AppSheet Bot 4 POSTs { reportId, projectId } to this URL. The web app
+  // uses the SAME script's doPost() (defined in WeatherFetch.gs), so the
+  // URL is the deployment URL of this script project itself.
+  WEATHER_WEBHOOK_URL: 'FILL_ME_IN_WEATHER_WEBHOOK_URL',
+
   // Sheet tab names — must match CSV filenames in 01_database_schema/
   TABS: {
     Projects:        'Projects',

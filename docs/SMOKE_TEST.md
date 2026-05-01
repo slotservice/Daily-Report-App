@@ -17,6 +17,7 @@ Method: paper / desk-check, no live AppSheet app yet.
 | 🟡 Issues flagged for build-time verification | 4 |
 | ✅ User journeys simulated and pass | 6 |
 | 🚧 Outstanding feature gaps for client decision | 1 |
+| 🆕 Features added 2026-05-01 (Evan request) | 2 — checkbox-styled Mark Completed (Action 3 update) + auto-weather (Bot 4 + WeatherFetch.gs) |
 
 The spec is **safe to build against now**. The four 🟡 items are things to
 keep an eye on while clicking through the AppSheet editor; none of them
@@ -64,6 +65,46 @@ Sam wouldn't have seen Super Home, John wouldn't have seen the Inbox,
 Evan wouldn't have routed to the Director Dashboard, the lock-after-review
 expression would have admitted everyone, and the admin-only Recall and
 Re-send actions would never appear.
+
+### 1.3 Auto-weather feature added 2026-05-01 (NEW)
+
+Per Evan's 2026-05-01 request, a Bot 4 + `WeatherFetch.gs` webhook now
+auto-fills `WeatherTemp` and `WeatherConditions` on a new DailyReports
+row using Open-Meteo and the project's Lat/Long. Paper-traced flow:
+
+1. Sam taps **Start Today's Report** for PRJ-002.
+2. Form opens; weather blank. Sam saves with just project + date filled.
+3. AppSheet syncs row to Sheet → Bot 4 fires (adds-only, both weather fields blank).
+4. Bot 4 POSTs `{reportId, projectId}` to the webhook URL.
+5. `WeatherFetch.gs` opens the master Sheet, reads `Projects.PRJ-002` → Lat=49.1535, Long=-125.9072.
+6. Calls `https://api.open-meteo.com/v1/forecast?latitude=49.1535&longitude=-125.9072&current=temperature_2m,weather_code&timezone=America/Vancouver`.
+7. Response e.g. `{ current: { temperature_2m: 11.4, weather_code: 61 } }` → mapped to `WeatherConditions = "Light Rain"`.
+8. Writes back to the DailyReports row in the Sheet (both fields blank → both written).
+9. Sam's next AppSheet sync pulls the values onto the form. ✅
+10. Sam reviews; if Open-Meteo got it wrong (e.g. it's actually snowing on the roof), edits `WeatherConditions` to `Snow` before submit.
+
+**Manual override invariant verification (paper trace):**
+
+| Race | Sam's action | Bot's action | Result | Verdict |
+|---|---|---|---|---|
+| (a) | Save form, wait 30 s | Sees both blank → writes both | Sam sees `11.4°C / Light Rain` on next sync | ✅ |
+| (b) | Save form, immediately type `Temp=15` before sync | Sees Temp non-blank, Cond blank → writes only Cond | Sam keeps `15°C`, gets `Light Rain` | ✅ |
+| (c) | Save form, type both `15 / Snow` immediately | Sees both non-blank → no-op (skipped reason logged) | Sam keeps `15°C / Snow` | ✅ |
+| (d) | Open-Meteo returns HTTP 503 | Webhook returns `{ok:false, error:...}`; AppSheet bot retries once then fails. Logged in Apps Script Executions and AppSheet bot history. | Both fields stay blank. Sam types them manually. Save & Submit `Only_If` blocks submit until both are non-blank, so no broken report can ship. | ✅ |
+| (e) | Project missing Lat/Long | Webhook returns `{ok:false, error:'Project ... missing Latitude/Longitude'}` | Same as (d). Admin adds coords on Projects row to unblock. | ✅ |
+
+**WMO weather-code mapping spot-check:**
+
+| WMO code | Open-Meteo description | Mapped to | Verdict |
+|---|---|---|---|
+| 0 | Clear sky | Sunny | ✅ |
+| 2 | Partly cloudy | Cloudy | ✅ |
+| 3 | Overcast | Overcast | ✅ |
+| 45 | Fog | Fog | ✅ |
+| 61 | Slight rain | Light Rain | ✅ |
+| 65 | Heavy rain | Heavy Rain | ✅ |
+| 75 | Heavy snowfall | Snow | ✅ |
+| 95 | Thunderstorm | Heavy Rain | ✅ (no Thunderstorm enum value; Heavy Rain is the safest mapping; super can override) |
 
 ### 1.2 ProjectTrades seed rows pollute production (FIXED)
 
@@ -355,6 +396,19 @@ your actual editor settings.
 - [ ] Email arrives at all three recipients with the PDF attached.
 - [ ] Bot 2 fires when Status moves Submitted → Reviewed.
 - [ ] Bot 3 schedule shows "Daily at 09:00 America/Vancouver", enabled.
+
+### After Step 9.5 — WeatherFetch.gs deployment
+- [ ] `WeatherFetch.gs` present in the Apps Script project alongside the other 4 .gs files.
+- [ ] `appsscript.json` shows `script.external_request` and `spreadsheets` scopes.
+- [ ] Web-app deployment URL captured and pasted into both `Config.gs` `WEATHER_WEBHOOK_URL` and Bot 4's webhook step.
+- [ ] Manually running `fetchAndApplyWeather('<seed-report-id>', '<seed-project-id>')` from the Apps Script editor populates the seed DailyReports row's `WeatherTemp` + `WeatherConditions` in the master Sheet within ~5 s.
+
+### After Step 9.6 — Bot 4 (auto-weather)
+- [ ] Trigger config: `DailyReports`, Adds-only, condition = both weather fields blank.
+- [ ] Webhook step: POST, JSON body with `<<[ReportID]>>` and `<<[ProjectID]>>` token interpolation.
+- [ ] End-to-end: as the seed superintendent, tap **Start Today's Report** for any project → save form blank-weather → within ~30 s of sync, both weather fields are prefilled.
+- [ ] Manual-override: create another report and immediately type `WeatherTemp = 99` before sync settles. Bot 4 leaves the `99` alone and only fills `WeatherConditions`.
+- [ ] Save & Submit gate: with both weather fields blank, the **Save & Submit** action is hidden / disabled (the `Only_If` requires both fields non-blank). Confirms manual entry remains a safety net if the auto-fill fails.
 
 ### After Step 10 — Security
 - [ ] Trying to sign in with an email NOT in `Users` is rejected.

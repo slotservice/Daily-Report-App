@@ -173,3 +173,69 @@ A morning nudge to any superintendent who failed to submit **yesterday's** repor
   ```
 
 > **Default deployment:** ENABLED. Per client request 2026-04-30.
+
+---
+
+## Bot 4: `Auto-Fill-Weather-On-Create`
+
+Per client request 2026-05-01: when a superintendent starts a new daily
+report, the WeatherTemp and WeatherConditions fields auto-fill from
+Open-Meteo using the project's Latitude / Longitude. Manual edits always
+win (the webhook only writes when the fields are still blank).
+
+**Trigger:**
+- Event type: `Data change`
+- Event source: `DailyReports`
+- Update event: `Adds only`
+- Condition:
+  ```
+  AND(
+    ISBLANK([WeatherTemp]),
+    ISBLANK([WeatherConditions])
+  )
+  ```
+
+**Process step — Call a webhook:**
+
+- Step type: `Call a webhook`
+- URL: the Apps Script web-app URL captured in deployment Step 9.5 (also
+  stored in `Config.gs` `WEATHER_WEBHOOK_URL` for the fallback Apps-Script
+  path; the bot uses the URL directly).
+- HTTP verb: `POST`
+- HTTP Content type: `application/json`
+- Body:
+  ```
+  {
+    "reportId": "<<[ReportID]>>",
+    "projectId": "<<[ProjectID]>>"
+  }
+  ```
+- Timeout: 30 seconds (Open-Meteo p99 latency is ~500 ms, but allow
+  margin for cold-start of the Apps Script web app).
+- Retry on failure: `Yes` — once. AppSheet's default backoff is fine.
+
+**What happens end-to-end:**
+
+1. Super taps **Start Today's Report** → form opens with weather blank.
+2. Super hits Save (form requires only ProjectID and ReportDate at create
+   time — see Save & Submit `Only_If` for the full submit-time gate).
+3. Bot 4 fires within ~10 seconds of the row syncing to the Sheet.
+4. The Apps Script `WeatherFetch.gs` looks up the project's Lat/Long,
+   calls Open-Meteo, maps the WMO weather code to a label, and writes
+   `WeatherTemp` + `WeatherConditions` back to the row in the Sheet.
+5. Super's next AppSheet sync (auto, ~30 s) shows the prefilled values.
+6. Super can edit either field freely. If they edit before step 5, Bot 4
+   sees the field as non-blank and skips it (manual override invariant).
+
+**Failure modes & handling:**
+
+| Failure | What the user sees | How they recover |
+|---|---|---|
+| Open-Meteo down / timeout | Weather stays blank | Super types values manually before Submit (the Save & Submit `Only_If` blocks submit on blank weather, so they can't accidentally ship a report without it) |
+| Project missing Lat/Long | Weather stays blank, error logged in Apps Script | Admin adds coords to the Projects row |
+| Webhook URL unset | Weather stays blank, AppSheet bot logs HTTP error | Admin pastes the URL into Bot 4 (and into `Config.gs` for the fallback) |
+| Super offline during create | Bot 4 waits for sync; weather populates on next sync | Same as the offline behavior for the rest of the app — no special handling needed |
+
+**Default deployment:** ENABLED. The fallback (manual entry) is fully
+preserved by the Save & Submit `Only_If` gate, so worst case the feature
+is silently a no-op.
