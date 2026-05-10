@@ -133,3 +133,53 @@ Actions are the buttons users tap. Configure each in **Behavior → Actions**.
   - `ReviewedByEmail` ← `""`
 - **Only if:** `IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role"))`
 - **Confirmation:** Yes — "Recalling will unlock this report and allow edits. Continue?"
+
+## Action 8: `Mark Trade Off Site` (ReportTrades)
+
+Per Evan 2026-05-10 (item 13). Mirrors Action 3 (Mark Task Completed) — single-tap inline check that drops the trade off the carry-forward list.
+
+- **Display name:** Off Site
+- **For a record of this table:** `ReportTrades`
+- **Do this:** `Data: set the values of some columns in this row`
+- **Set these columns:**
+  - `Status` ← `"Off Site"`
+  - `OffSiteDate` ← `TODAY()`
+- **Only if this condition is true:**
+  ```
+  AND(
+    [Status] = "On Site",
+    OR(
+      USEREMAIL() = LOOKUP([ProjectID],"Projects","ProjectID","SuperintendentEmail"),
+      IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role"))
+    )
+  )
+  ```
+- **Prominence:** Inline on the **Trades on Site Today** section of `Today's Report`.
+- **Display style:** `Icon` (not button) — shows as a single tappable check beside each trade row, mirroring the visual language of Mark Task Completed.
+- **Icon:** `check-square`
+- **Behavior on tap:** No confirmation prompt — one-tap-fast, recoverable by Admin direct-edit if a misclick happens.
+
+## Action 9: `Mark Equipment Off Site` (Equipment)
+
+Per Evan 2026-05-10 (item 12). Identical pattern to Action 8.
+
+- **Display name:** Off Site
+- **For a record of this table:** `Equipment`
+- **Do this:** `Data: set the values of some columns in this row`
+- **Set these columns:**
+  - `Status` ← `"Off Site"`
+  - `OffSiteDate` ← `TODAY()`
+- **Only if this condition is true:**
+  ```
+  AND(
+    [Status] = "On Site",
+    OR(
+      USEREMAIL() = LOOKUP([ProjectID],"Projects","ProjectID","SuperintendentEmail"),
+      IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role"))
+    )
+  )
+  ```
+- **Prominence:** Inline on the **Equipment On Site Today** section of `Today's Report`.
+- **Display style:** `Icon`.
+- **Icon:** `check-square`
+- **Behavior on tap:** No confirmation prompt.

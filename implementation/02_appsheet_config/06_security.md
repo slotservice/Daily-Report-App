@@ -25,7 +25,8 @@ Set on each table in **Data → Tables → [TableName] → Are updates allowed?*
 | Users | `IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role"))` | same | same |
 | DailyReports | `OR(IN("SiteSuperintendent", LOOKUP(USEREMAIL(),"Users","Email","Role")), IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role")))` | see expression below | `IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role"))` |
 | Tasks | superintendent of project or Admin | superintendent of project or Admin | Admin only |
-| ReportTrades / Equipment / Rentals / Visitors / Deliveries / Photos / TimeEntries | superintendent of parent report **AND** parent `[Status] <> "Reviewed"` | same | same |
+| ReportTrades / Equipment | superintendent of the row's `ProjectID` (project-scoped, not report-scoped) **AND** project is `Active = TRUE` | same | same |
+| Rentals / Visitors / Deliveries / Photos / TimeEntries | superintendent of parent report **AND** parent `[Status] <> "Reviewed"` | same | same |
 | Trades / Personnel / ProjectTrades / ProjectPersonnel | Admin only | Admin only | Admin only |
 
 ### `DailyReports.Updates` (the lock-after-review rule — critical)
@@ -60,11 +61,19 @@ This expression encodes the entire spec:
 
 ### Belt-and-suspenders: lock the children too
 
-Children of a Reviewed report must also become read-only. Add this to each child table's `Update_If` and `Delete_If`:
+Children of a Reviewed report must also become read-only. Add this to **`Rentals`, `Visitors`, `Deliveries`, `Photos`, `TimeEntries`** `Update_If` and `Delete_If`:
 
 ```
 LOOKUP([ReportID], "DailyReports", "ReportID", "Status") <> "Reviewed"
 ```
+
+**`ReportTrades` and `Equipment` are EXCLUDED from this rule** as of 2026-05-10. They are project-scoped carry-forward rows (per Evan items 12 + 13) — they outlive their `ReportID`'s report. Their own `Status = "On Site" | "Off Site"` is the source of truth for "is this row still in active use." If you applied the report-status lock to them, a super editing today's report would be locked out of equipment whose original report has been Reviewed weeks ago — wrong. Use this rule for them instead:
+
+```
+LOOKUP([ProjectID], "Projects", "ProjectID", "Active") = TRUE
+```
+
+Same pattern as `Tasks` (which has always been project-scoped).
 
 ---
 

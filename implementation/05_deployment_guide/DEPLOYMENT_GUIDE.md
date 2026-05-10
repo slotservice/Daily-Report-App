@@ -243,3 +243,24 @@ After the PM marks Reviewed:
 | Manager can't Mark as Reviewed | Email not in `Users` table | Add the row; AppSheet rejects unknown sign-ins |
 | Bot 4 fires but weather stays blank | Project missing Lat/Long, OR webhook URL not pasted into the bot, OR Open-Meteo blocked by network egress | Apps Script `View → Executions` shows the error. Most common: paste the webhook URL into Bot 4 step config. Second most common: fill Lat/Long on the Projects row. |
 | Bot 4 overwrites super's manual values | Should not happen — `WeatherFetch.gs` only writes when fields are blank | Verify the `if (!tempIsBlank && !condIsBlank) return ...` branch wasn't edited away in `WeatherFetch.gs` |
+| Equipment / Trades not carrying forward to next day's report | New `ProjectID` or `Status` columns missing on the Sheet | Re-import `Equipment.csv` / `ReportTrades.csv` so AppSheet picks up the new headers, then `Data → Tables → Regenerate Schema` for both tables. Set `Status` Enum values to `On Site, Off Site` (no whitespace). |
+| "Off Site" check-square doesn't drop the row from today's report | Action 8 / 9 `Only_If` condition false, OR virtual column hasn't refreshed | Confirm super's email is in `Projects.SuperintendentEmail` for the row's `ProjectID`. Force a sync. |
+| Phantom report rows appearing at odd hours (e.g. 1 AM) | Almost certainly an auto-saved offline form from a phone that re-synced overnight, OR a leftover time-based Apps Script trigger from testing | Run the diagnostic in `HANDOFF.md` §14 (Daniel diagnostic checklist) — Audit History tells you the user/device in 30 seconds |
+| Trades / Equipment "Off Site" check visible to non-supers | Action 8 / 9 `Only_If` permits wrong role | Re-paste the `Only_If` from `03_actions.md` exactly. |
+
+---
+
+## Step 17 — Apply 2026-05-10 client feedback (delta from previous build)
+
+This step is a **delta**, not a full rebuild. Skip if you're building from scratch — the changes are already in the spec docs above. Apply it if you've already deployed an earlier version of the app and need to bring it up to spec.
+
+1. **Schema** — re-import `Equipment.csv` and `ReportTrades.csv` (now has `ProjectID`, `Status`, `OffSiteDate`, `OriginReportID` columns). `Data → Tables → Regenerate Schema` for both. For any pre-existing rows, fill `ProjectID` from `LOOKUP(ReportID, "DailyReports", "ReportID", "ProjectID")` and set `Status = "On Site"`.
+2. **Deliveries.ReceivedAt** — change column type from `DateTime` to `Time`, initial value `TIMENOW()`. Update any pre-existing rows by stripping the date portion.
+3. **DailyReports virtual columns** — add `[Related ReportTrades (still on site)]` and `[Related Equipment (still on site)]` per `01_columns_and_formulas.md` §3.
+4. **Display names** — apply per-column `Display name` overrides for safety toggles, weather, notable events, etc. (see §3 of `01_columns_and_formulas.md`). Worksafe / Site Inspection / Field Level Hazard headings get a `?` suffix.
+5. **Hide flags** — set `Show? = FALSE` on `IsLocked`. Set `Show? = IN("Admin", LOOKUP(...))` on `ReportID` and `Status`. Hide `EquipmentID`, `ReportTradeID`, `DeliveryID` from forms.
+6. **Detail view layout** — pin the section order per `04_views.md` `Today's Report`. Project Name first; Notable Events last (right before Save & Submit). Equipment + Trades sections bind to the new "still on site" virtual columns.
+7. **Actions 8 + 9** — create `Mark Trade Off Site` (on `ReportTrades`) and `Mark Equipment Off Site` (on `Equipment`) per `03_actions.md`.
+8. **PDF template** — update the binding of the Trades and Equipment tables to point at `[Related ReportTrades (still on site)]` and `[Related Equipment (still on site)]` per `04_pdf_template/GoogleDoc_template_setup.md` §4.
+9. **Form auto-save** — confirm `DailyReports_Form` requires explicit Save tap (not auto-commit on field blur). Mitigates the ghost-report incident.
+10. **Smoke test** — open today's report on PRJ-001 as James, mark a trade Off Site → confirm it disappears from the list. Open tomorrow's report → confirm the remaining trades appear.

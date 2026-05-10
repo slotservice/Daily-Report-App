@@ -6,6 +6,14 @@ Legend: `K` = Key, `L` = Label, `H` = Hidden in form by default. Empty cells = A
 
 ---
 
+## Universal display-name rule (applies to every table)
+
+**For every column whose internal name is CamelCase (`WeatherTemp`, `WorksafeInspectionToday`, `ReceivedAt`, etc.), set the `Display name` field in AppSheet to the human-readable spaced version** (e.g., `WeatherTemp` → `Weather Temp`, `WorksafeInspectionToday` → `Worksafe Inspection Today?`, `ReceivedAt` → `Received At`).
+
+Per Evan 2026-05-10: every fillable-field heading in the superintendent's view must read as natural English, not as a database identifier. Where this spec lists a specific `Display name` (for safety toggles, the Field Level Hazard heading, etc.), use that exact string. For everything else, follow the auto-rule: split CamelCase on capital letters and capitalise each word.
+
+---
+
 ## 1. `Projects`
 
 | Column | Type | K/L/H | Initial value | Valid_If / Show_If / notes |
@@ -52,21 +60,21 @@ Legend: `K` = Key, `L` = Label, `H` = Hidden in form by default. Empty cells = A
 
 ## 3. `DailyReports`
 
-| Column | Type | K/L/H | Initial value | Valid_If / Show_If / notes |
+| Column | Type | K/L/H | Initial value | Valid_If / Show_If / Display name / notes |
 |---|---|---|---|---|
-| ReportID | Text | K | `"RPT-" & TEXT([ReportDate],"YYYY-MM-DD") & "-" & [ProjectID]` | Read-only after create |
-| ProjectID | Ref → Projects |  | (passed in from view) | Required. Valid_If: `FILTER("Projects", AND([Active] = TRUE, OR(IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role")), USEREMAIL() = [SuperintendentEmail])))` |
-| ReportDate | Date |  | `TODAY()` | Required. Valid_If: prevents duplicate same-day reports: `NOT(IN([_THIS], SELECT(DailyReports[ReportDate], AND([ProjectID] = [_THISROW].[ProjectID], [ReportID] <> [_THISROW].[ReportID]))))` |
-| SuperintendentID | Ref → Users |  | `LOOKUP([ProjectID], "Projects", "ProjectID", "SuperintendentID")` | Editable_If: `FALSE` |
-| PreparedByEmail | Email |  | `USEREMAIL()` | Editable_If: `FALSE` |
-| WeatherTemp | Number |  |  | **Auto-filled by Bot 4** from Open-Meteo using the project's Lat/Long shortly after the report row is created. Show as °C. Editable by super (manual override always wins — Bot 4 only writes when this column is blank). Required at submit time, not at create time — see Save & Submit `Only_If` in `03_actions.md`. |
-| WeatherConditions | Enum |  |  | **Auto-filled by Bot 4** from Open-Meteo's WMO weather code → label mapping. Editable by super. Required at submit time, not at create time. Values: `Sunny, Cloudy, Overcast, Light Rain, Heavy Rain, Snow, Wind, Fog`. Base type Text. |
-| WorksafeInspectionToday | Yes/No |  | `FALSE` | Required |
-| SiteInspectionDoneToday | Yes/No |  | `FALSE` | Required |
-| FieldLevelHazardUpToDate | Yes/No |  | `TRUE` | Required |
-| NextToolboxMeeting | Date |  |  |  |
-| NotableEvents | LongText |  |  |  |
-| Status | Enum |  | `"Draft"` | Values: `Draft, Submitted, Reviewed`. Editable_If: see §6 lock rule |
+| ReportID | Text | K, H | `"RPT-" & TEXT([ReportDate],"YYYY-MM-DD") & "-" & [ProjectID]` | Read-only after create. **`Show?` = `IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role"))`** — hide from supers, PMs, Coordinators, Directors per Evan 2026-05-10 (item 1). |
+| ProjectID | Ref → Projects |  | (passed in from view) | **Display name: `Project Name`.** **Pinned to the very top of the form** (per Evan item 7) — first visible field in `DailyReports_Form` and first row of the General Info section in `Today's Report`. AppSheet displays this Ref using the `Projects.ProjectName` Label, so the user sees the project name, not `PRJ-001`. Required. Valid_If: `FILTER("Projects", AND([Active] = TRUE, OR(IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role")), USEREMAIL() = [SuperintendentEmail])))` |
+| ReportDate | Date |  | `TODAY()` | Display name: `Report Date`. Required. Valid_If: prevents duplicate same-day reports: `NOT(IN([_THIS], SELECT(DailyReports[ReportDate], AND([ProjectID] = [_THISROW].[ProjectID], [ReportID] <> [_THISROW].[ReportID]))))` |
+| SuperintendentID | Ref → Users |  | `LOOKUP([ProjectID], "Projects", "ProjectID", "SuperintendentID")` | Display name: `Superintendent`. Editable_If: `FALSE` |
+| PreparedByEmail | Email |  | `USEREMAIL()` | Display name: `Prepared By`. Editable_If: `FALSE` |
+| WeatherTemp | Number |  |  | Display name: `Weather Temp`. **Auto-filled by Bot 4** from Open-Meteo using the project's Lat/Long shortly after the report row is created. Show as °C. Editable by super (manual override always wins — Bot 4 only writes when this column is blank). Required at submit time, not at create time — see Save & Submit `Only_If` in `03_actions.md`. |
+| WeatherConditions | Enum |  |  | Display name: `Weather Conditions`. **Auto-filled by Bot 4** from Open-Meteo's WMO weather code → label mapping. Editable by super. Required at submit time, not at create time. Values: `Sunny, Cloudy, Overcast, Light Rain, Heavy Rain, Snow, Wind, Fog`. Base type Text. |
+| WorksafeInspectionToday | Yes/No |  | `FALSE` | **Display name: `Worksafe Inspection Today?`** (per Evan item 4 — every safety toggle ends with `?`). Required. |
+| SiteInspectionDoneToday | Yes/No |  | `FALSE` | **Display name: `Site Inspection Done Today?`** (per Evan item 4). Required. |
+| FieldLevelHazardUpToDate | Yes/No |  | `TRUE` | **Display name: `Field Level Hazard Assessments Up to Date?`** (per Evan item 3 — exact wording). Required. |
+| NextToolboxMeeting | Date |  |  | Display name: `Next Toolbox Meeting`. Date field (no `?` — not a yes/no). |
+| NotableEvents | LongText |  |  | Display name: `Notable Events`. **Pinned as the LAST input field** in both the form and the detail view (per Evan item 5) — must appear after every child-table section (Equipment, Rentals, Visitors, Deliveries, Photos) and immediately before the `Save & Submit` action button. |
+| Status | Enum |  | `"Draft"` | Values: `Draft, Submitted, Reviewed`. Editable_If: see §6 lock rule. **`Show?` = `IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role"))`** — hide from supers per Evan 2026-05-10 (item 6: "hide the status bar"). Managers / Director still see it inline on the Manager Inbox / Director Dashboard via slice filters; Admin sees it everywhere. |
 | SubmittedAt | DateTime | H |  | Set by Save & Submit action. Editable_If: `FALSE` |
 | ReviewedAt | DateTime | H |  | Set by Mark as Reviewed action. Editable_If: `FALSE` |
 | ReviewedByEmail | Email | H |  | Set by Mark as Reviewed action. Editable_If: `FALSE` |
@@ -76,8 +84,10 @@ Legend: `K` = Key, `L` = Label, `H` = Hidden in form by default. Empty cells = A
 | **Related Tasks (in progress)** *(virtual)* | List | H | `SELECT(Tasks[TaskID], AND([ProjectID] = [_THISROW].[ProjectID], [Status] <> "Completed", [StartDate] <= [_THISROW].[ReportDate]))` |  |
 | **Related Tasks (started today)** *(virtual)* | List | H | `SELECT(Tasks[TaskID], AND([ProjectID] = [_THISROW].[ProjectID], [StartDate] = [_THISROW].[ReportDate], [OriginReportID] = [_THISROW].[ReportID]))` |  |
 | **Related Tasks (completed today)** *(virtual)* | List | H | `SELECT(Tasks[TaskID], AND([ProjectID] = [_THISROW].[ProjectID], [Status] = "Completed", [CompletedDate] = [_THISROW].[ReportDate]))` |  |
-| **Related ReportTrades** *(virtual)* | List | H | `REF_ROWS("ReportTrades", "ReportID")` |  |
-| **Related Equipment** *(virtual)* | List | H | `REF_ROWS("Equipment", "ReportID")` |  |
+| **Related ReportTrades** *(virtual)* | List | H | `REF_ROWS("ReportTrades", "ReportID")` | Per-report row history (audit). Not the section the super sees in the form — see "ReportTrades (still on site)" below. |
+| **Related ReportTrades (still on site)** *(virtual)* | List | H | `SELECT(ReportTrades[ReportTradeID], AND([ProjectID] = [_THISROW].[ProjectID], [Status] = "On Site"))` | **Per Evan 2026-05-10 (item 13): trades carry forward like tasks in progress.** This is the list the super sees on today's report under "Trades on Site Today". When a trade leaves site, the super taps the inline "Mark Off Site" action on Action 8 (`03_actions.md`), which flips `ReportTrades.Status` to `"Off Site"` and the row drops out of this virtual column. New trades are added via the inline `+` on this section, which calls `LINKTOFORM("ReportTrades_Form", "ReportID", [ReportID], "ProjectID", [ProjectID])`. |
+| **Related Equipment** *(virtual)* | List | H | `REF_ROWS("Equipment", "ReportID")` | Per-report row history (audit). Not the section the super sees — see "Equipment (still on site)" below. |
+| **Related Equipment (still on site)** *(virtual)* | List | H | `SELECT(Equipment[EquipmentID], AND([ProjectID] = [_THISROW].[ProjectID], [Status] = "On Site"))` | **Per Evan 2026-05-10 (item 12): equipment carries forward like tasks in progress.** Same pattern as trades above — Action 9 in `03_actions.md` flips `Equipment.Status` to `"Off Site"` when the super taps the inline "Mark Off Site" check. |
 | **Related Rentals** *(virtual)* | List | H | `REF_ROWS("Rentals", "ReportID")` |  |
 | **Related Visitors** *(virtual)* | List | H | `REF_ROWS("Visitors", "ReportID")` |  |
 | **Related Deliveries** *(virtual)* | List | H | `REF_ROWS("Deliveries", "ReportID")` |  |
@@ -85,7 +95,7 @@ Legend: `K` = Key, `L` = Label, `H` = Hidden in form by default. Empty cells = A
 | **Related TimeEntries** *(virtual)* | List | H | `REF_ROWS("TimeEntries", "ReportID")` |  |
 | **TotalHoursToday** *(virtual)* | Decimal |  | `SUM([Related TimeEntries][Hours])` |  |
 | **ProjectName** *(virtual)* | Text |  | `LOOKUP([ProjectID], "Projects", "ProjectID", "ProjectName")` | Used in PDF + email subject |
-| **IsLocked** *(virtual)* | Yes/No |  | `[Status] = "Reviewed"` |  |
+| **IsLocked** *(virtual)* | Yes/No | H | `[Status] = "Reviewed"` | **`Show?` = `FALSE`** — internal flag, hide everywhere per Evan 2026-05-10 (item 10). Used only by other formulas / security rules; never shown in UI. |
 
 ---
 
@@ -107,13 +117,19 @@ Legend: `K` = Key, `L` = Label, `H` = Hidden in form by default. Empty cells = A
 
 ## 5. `ReportTrades`
 
+Per Evan 2026-05-10 (item 13) the trades-on-site list **carries forward** day to day, mirroring the Tasks-in-progress pattern. Same additive change as `Equipment` (§10): new `ProjectID`, `Status`, `OffSiteDate`, `OriginReportID` columns. Existing columns unchanged.
+
 | Column | Type | K/L/H | Initial value | Notes |
 |---|---|---|---|---|
-| ReportTradeID | Text | K | `"RT-" & TEXT(COUNT(ReportTrades[ReportTradeID])+1, "0000")` |  |
-| ReportID | Ref → DailyReports |  |  | Required |
-| TradeID | Ref → Trades |  |  | Required. Valid_If: `SELECT(ProjectTrades[TradeID], [ProjectID] = LOOKUP([_THISROW].[ReportID], "DailyReports", "ReportID", "ProjectID"))` |
-| WorkerCount | Number |  | `1` | Min 1 |
+| ReportTradeID | Text | K, H | `"RT-" & TEXT(COUNT(ReportTrades[ReportTradeID])+1, "0000")` | Hidden in UI (internal ID). |
+| ReportID | Ref → DailyReports | H |  | Required at create. First-report pointer. Hidden in form (prefilled from parent). |
+| ProjectID | Ref → Projects | H | `LOOKUP([ReportID], "DailyReports", "ReportID", "ProjectID")` | **NEW 2026-05-10.** Required. Auto-derived; never edited by user. Drives the carry-forward virtual column on `DailyReports`. |
+| TradeID | Ref → Trades |  |  | Display name: `Trade`. Required. Valid_If: `SELECT(ProjectTrades[TradeID], [ProjectID] = LOOKUP([_THISROW].[ReportID], "DailyReports", "ReportID", "ProjectID"))` |
+| WorkerCount | Number |  | `1` | Display name: `Worker Count`. Min 1. |
 | Notes | Text |  |  |  |
+| Status | Enum |  | `"On Site"` | **NEW 2026-05-10.** Display name: `Status`. Values: `On Site, Off Site`. Base type Text. Required. Toggle via Action 8 (`Mark Trade Off Site`) in `03_actions.md`. Direct edit allowed for Admin. |
+| OffSiteDate | Date | H |  | **NEW 2026-05-10.** Set by Action 8. Editable_If: `[Status] = "Off Site"`. |
+| OriginReportID | Ref → DailyReports | H |  | **NEW 2026-05-10.** First report on which this trade appeared. Editable_If: `FALSE`. |
 
 ---
 
@@ -168,13 +184,19 @@ Legend: `K` = Key, `L` = Label, `H` = Hidden in form by default. Empty cells = A
 
 ## 10. `Equipment`
 
+Per Evan 2026-05-10 (item 12) the Equipment list **carries forward** day to day, mirroring the Tasks-in-progress pattern. New columns `ProjectID`, `Status`, `OffSiteDate`, `OriginReportID` were added 2026-05-10 to enable this. Existing columns (`ReportID`, `EquipmentName`, `TradeID`, `Comments`) are unchanged. `ReportID` stays for backward compatibility and as the "first appeared on this report" pointer; the project-wide carry-forward is driven by `ProjectID` + `Status`.
+
 | Column | Type | K/L/H | Initial value | Notes |
 |---|---|---|---|---|
-| EquipmentID | Text | K | `"EQ-" & TEXT(COUNT(Equipment[EquipmentID])+1, "0000")` |  |
-| ReportID | Ref → DailyReports |  |  | Required |
-| EquipmentName | Text | L |  | Required |
-| TradeID | Ref → Trades |  |  |  |
+| EquipmentID | Text | K, H | `"EQ-" & TEXT(COUNT(Equipment[EquipmentID])+1, "0000")` | Hidden everywhere (per Evan item 1 family — no internal IDs in the UI). |
+| ReportID | Ref → DailyReports | H |  | Required at create. The first-report pointer; not required to match the row's project beyond create. **Hidden in the form** — prefilled from the parent report when the super taps `+ Add Equipment` on today's report. |
+| ProjectID | Ref → Projects | H | `LOOKUP([ReportID], "DailyReports", "ReportID", "ProjectID")` | **NEW 2026-05-10.** Required. Auto-derived from ReportID at create — never edited by the user. Drives the project-wide carry-forward virtual column on `DailyReports`. Hidden in the form. |
+| EquipmentName | Text | L |  | Display name: `Equipment Name`. Required. |
+| TradeID | Ref → Trades |  |  | Display name: `Trade`. |
 | Comments | Text |  |  |  |
+| Status | Enum |  | `"On Site"` | **NEW 2026-05-10.** Display name: `Status`. Values: `On Site, Off Site`. Base type Text. Required. Drives whether the row appears in tomorrow's "Equipment on Site Today" carry-forward list. Editable_If: super of the project, or Admin. Toggle is via the inline `Mark Equipment Off Site` action (Action 9) in `03_actions.md`, not by the user editing this column directly — but direct edit is allowed for cleanup. |
+| OffSiteDate | Date | H |  | **NEW 2026-05-10.** Set by `Mark Equipment Off Site` (Action 9). Editable_If: `[Status] = "Off Site"`. Hidden in form. |
+| OriginReportID | Ref → DailyReports | H |  | **NEW 2026-05-10.** Set by `+ Add Equipment` action — the report on which this piece of equipment was first added. Editable_If: `FALSE`. Mirrors `Tasks.OriginReportID`. |
 
 ---
 
@@ -209,12 +231,12 @@ Legend: `K` = Key, `L` = Label, `H` = Hidden in form by default. Empty cells = A
 
 | Column | Type | K/L/H | Initial value | Notes |
 |---|---|---|---|---|
-| DeliveryID | Text | K | `"DEL-" & TEXT(COUNT(Deliveries[DeliveryID])+1, "0000")` |  |
-| ReportID | Ref → DailyReports |  |  | Required |
-| PONumber | Text | L |  | Required |
-| Supplier | Text |  |  | Required |
-| Description | LongText |  |  | Required |
-| ReceivedAt | DateTime |  | `NOW()` |  |
+| DeliveryID | Text | K, H | `"DEL-" & TEXT(COUNT(Deliveries[DeliveryID])+1, "0000")` | Hidden in UI. |
+| ReportID | Ref → DailyReports | H |  | Required. Hidden in form (prefilled from parent). |
+| PONumber | Text | L |  | Display name: `PO Number`. Required. |
+| Supplier | Text |  |  | Required. |
+| Description | LongText |  |  | Required. |
+| ReceivedAt | **Time** |  | `TIMENOW()` | **CHANGED 2026-05-10 from `DateTime` → `Time`** per Evan item 11: "Time Picker. Minutes/Hours is enough accuracy, turn off seconds." AppSheet's `Time` type uses an HH:MM picker (no seconds wheel) on every platform. The date is implicit from the parent `DailyReports.ReportDate`, so we don't need date precision on the delivery itself. Display name: `Received At`. |
 
 ---
 

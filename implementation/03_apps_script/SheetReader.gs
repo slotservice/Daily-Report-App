@@ -56,15 +56,24 @@ function buildReportPayload(reportId) {
     formatDate_(t.StartDate) <= reportDate
   );
 
-  // Children
-  const reportTrades = findAll_(CONFIG.TABS.ReportTrades, 'ReportID', reportId).map(rt => {
-    const trade = findOne_(CONFIG.TABS.Trades, 'TradeID', rt.TradeID);
-    return Object.assign({}, rt, { TradeName: trade ? trade.TradeName : '' });
-  });
-  const equipment  = findAll_(CONFIG.TABS.Equipment,  'ReportID', reportId).map(e => {
-    const trade = findOne_(CONFIG.TABS.Trades, 'TradeID', e.TradeID);
-    return Object.assign({}, e, { TradeName: trade ? trade.TradeName : '' });
-  });
+  // ReportTrades + Equipment are PROJECT-SCOPED carry-forward (per Evan
+  // 2026-05-10 items 12 + 13). Each daily PDF lists every trade / piece of
+  // equipment whose Status is currently "On Site" for the project — not just
+  // the rows whose ReportID equals this report. This mirrors the AppSheet
+  // virtual columns `[Related ReportTrades (still on site)]` and
+  // `[Related Equipment (still on site)]`.
+  const reportTrades = findAll_(CONFIG.TABS.ReportTrades, 'ProjectID', report.ProjectID)
+    .filter(rt => rt.Status === 'On Site')
+    .map(rt => {
+      const trade = findOne_(CONFIG.TABS.Trades, 'TradeID', rt.TradeID);
+      return Object.assign({}, rt, { TradeName: trade ? trade.TradeName : '' });
+    });
+  const equipment  = findAll_(CONFIG.TABS.Equipment,  'ProjectID', report.ProjectID)
+    .filter(e => e.Status === 'On Site')
+    .map(e => {
+      const trade = findOne_(CONFIG.TABS.Trades, 'TradeID', e.TradeID);
+      return Object.assign({}, e, { TradeName: trade ? trade.TradeName : '' });
+    });
   const rentals    = findAll_(CONFIG.TABS.Rentals,    'ReportID', reportId);
   const visitors   = findAll_(CONFIG.TABS.Visitors,   'ReportID', reportId);
   const deliveries = findAll_(CONFIG.TABS.Deliveries, 'ReportID', reportId);

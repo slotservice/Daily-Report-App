@@ -50,11 +50,11 @@ The parent virtual columns to bind each table to:
 | Doc table | Bind list |
 |---|---|
 | Crew & Hours | `[Related TimeEntries]` |
-| Trades on Site Today | `[Related ReportTrades]` |
+| Trades on Site Today | `[Related ReportTrades (still on site)]` *(carry-forward, per Evan 2026-05-10 item 13 — all trades currently on the project, not just today's adds)* |
 | Tasks Started Today | `[Related Tasks (started today)]` |
 | Tasks Still in Progress | `[Related Tasks (in progress)]` |
 | Tasks Completed Today | `[Related Tasks (completed today)]` |
-| Equipment | `[Related Equipment]` |
+| Equipment On Site Today | `[Related Equipment (still on site)]` *(carry-forward, per Evan 2026-05-10 item 12)* |
 | Rentals | `[Related Rentals]` |
 | Visitors | `[Related Visitors]` |
 | Deliveries | `[Related Deliveries]` |
@@ -81,11 +81,11 @@ If you switch to the Apps-Script renderer (`PdfGenerator.gs`), the syntax is *di
 | AppSheet syntax | Apps-Script sentinel |
 |---|---|
 | `<<Start: [Related TimeEntries]>>...<<End>>` | a paragraph containing `[[CREW_TABLE]]` immediately followed by a 2-row table whose row 2 will be cloned |
-| `<<Start: [Related ReportTrades]>>...<<End>>` | `[[TRADES_TABLE]]` |
+| `<<Start: [Related ReportTrades (still on site)]>>...<<End>>` | `[[TRADES_TABLE]]` |
 | `<<Start: [Related Tasks (started today)]>>...<<End>>` | `[[TASKS_STARTED_TABLE]]` |
 | `<<Start: [Related Tasks (in progress)]>>...<<End>>` | `[[TASKS_INPROGRESS_TABLE]]` |
 | `<<Start: [Related Tasks (completed today)]>>...<<End>>` | `[[TASKS_COMPLETED_TABLE]]` |
-| `<<Start: [Related Equipment]>>...<<End>>` | `[[EQUIPMENT_TABLE]]` |
+| `<<Start: [Related Equipment (still on site)]>>...<<End>>` | `[[EQUIPMENT_TABLE]]` |
 | `<<Start: [Related Rentals]>>...<<End>>` | `[[RENTALS_TABLE]]` |
 | `<<Start: [Related Visitors]>>...<<End>>` | `[[VISITORS_TABLE]]` |
 | `<<Start: [Related Deliveries]>>...<<End>>` | `[[DELIVERIES_TABLE]]` |
