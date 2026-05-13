@@ -30,8 +30,9 @@ Configure these in **Automation → Bots → New Bot**.
   ```
 - File name prefix:
   ```
-  CONCATENATE("DailyReport_", LOOKUP([ProjectID],"Projects","ProjectID","ProjectCode"), "_", TEXT([ReportDate],"YYYY-MM-DD"))
+  CONCATENATE(TEXT([ReportDate],"YY-MM-DD"), " - ", LOOKUP([ProjectID],"Projects","ProjectID","ProjectName"))
   ```
+  > **Changed 2026-05-13** during end-to-end test as Sam. The original `DailyReport_<Code>_<YYYY-MM-DD>` pattern produced filenames like `DailyReport_2609_2026-05-13.pdf` which were unwieldy in Evan's inbox. New pattern produces `26-05-13 - Fourth Street Washroom.pdf` — short date first (sorts chronologically in any Drive folder) followed by the human-readable project name. Verified live in the test email of 2026-05-13.
 - File type: `PDF`
 - **Important — capture the file URL:** map the step output `[_OUTPUT_URL]` into the `DailyReports.PdfFileID` column via a downstream `Run a data action` step (Step 1.2 below).
 

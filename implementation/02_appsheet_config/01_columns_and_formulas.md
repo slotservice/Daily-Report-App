@@ -224,6 +224,7 @@ Per Evan 2026-05-10 (item 12) the Equipment list **carries forward** day to day,
 | Purpose | Text |  |  | Required |
 | NumPeople | Number |  | `1` |  |
 | VisitTime | DateTime |  | `NOW()` |  |
+| Name | Name |  |  | **Added 2026-05-13 per Evan's email follow-up**: "For the visitors section, can you add a name field please?". Required. Tracks the individual visitor's name (Company stays separate — captures the organisation they're from). Open question for next Evan round: should `Name` become the Label column instead of `Company` so that inline visitor lists on `Today's Report` show "John Smith" rather than "Mode Projects"? Leaving Company as Label for now; revisit if Evan asks. |
 
 ---
 

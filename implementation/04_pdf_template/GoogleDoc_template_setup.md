@@ -56,7 +56,7 @@ The parent virtual columns to bind each table to:
 | Tasks Completed Today | `[Related Tasks (completed today)]` |
 | Equipment On Site Today | `[Related Equipment (still on site)]` *(carry-forward, per Evan 2026-05-10 item 12)* |
 | Rentals | `[Related Rentals]` |
-| Visitors | `[Related Visitors]` |
+| Visitors | `[Related Visitors]` *(5 columns as of 2026-05-13 — header row: `Name \| Company \| Purpose \| People \| Time`. `Name` was added per Evan's 2026-05-13 email follow-up.)* |
 | Deliveries | `[Related Deliveries]` |
 
 > Each virtual column was defined in `02_appsheet_config/01_columns_and_formulas.md` §3.
