@@ -16,13 +16,13 @@ Actions are the buttons users tap. Configure each in **Behavior → Actions**.
   ```
   AND(
     [Status] = "Draft",
-    USEREMAIL() = LOOKUP([ProjectID],"Projects","ProjectID","SuperintendentEmail"),
     ISNOTBLANK([WeatherTemp]),
     ISNOTBLANK([WeatherConditions])
   )
   ```
+- **Why no `USEREMAIL() = LOOKUP(...)` check (per 2026-05-13 live-build):** The Reports_Editable_By_Me slice already filters to "user is super of the project's report, or Admin". If a user can see the report at all (via the slice that powers `Today's Report`), they already have permission to submit it. Including the LOOKUP redundantly inside the action's Only_If introduced a real bug 2026-05-13 — the `LOOKUP([ProjectID], "Projects", "ProjectID", "SuperintendentEmail")` was returning the wrong project's super (USR-003 for PRJ-002 instead of USR-005). Removing the redundant LOOKUP made the button render correctly. The slice handles the auth; the action's Only_If only validates content readiness (Draft status + weather populated).
 - **Confirmation:** Yes — "Submit this report? Once submitted it will be emailed for review."
-- **Prominence:** Display prominently
+- **Prominence:** Display prominently. **AppSheet renders prominent actions at the top of detail views**, which lines up with Evan's 2026-05-11 (item 10) request that the submit button sit "at the top of the form." After form save, the super lands on `Today's Report` with the `Save & Submit` button as the very first thing they see — functionally the second of Evan's two buttons.
 - **Icon:** `paper-plane`
 - **Triggers:** Bot 1 (see `05_automations.md`)
 
@@ -183,3 +183,45 @@ Per Evan 2026-05-10 (item 12). Identical pattern to Action 8.
 - **Display style:** `Icon`.
 - **Icon:** `check-square`
 - **Behavior on tap:** No confirmation prompt.
+
+## Action 10: `Start Today's Report` (Projects → DailyReports; nav-add)
+
+Per Evan 2026-05-11 (item 9). Replaces the loose `LINKTOFORM(...)` CTA that previously lived on `Today's Report`. The guard's whole purpose is to make the duplicate-key error structurally impossible: when a `DailyReports` row already exists for the selected project on today's date, the button does not render.
+
+- **Display name:** Start Today's Report
+- **For a record of this table:** `Projects`
+- **Do this:** `App: go to another view within this app`
+- **Target:**
+  ```
+  LINKTOFORM(
+    "DailyReports_Form",
+    "ProjectID",  [ProjectID],
+    "ReportDate", TODAY()
+  )
+  ```
+- **Only if this condition is true:**
+  ```
+  AND(
+    [Active] = TRUE,
+    OR(
+      USEREMAIL() = [SuperintendentEmail],
+      IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role"))
+    ),
+    ISBLANK(
+      SELECT(
+        DailyReports[ReportID],
+        AND(
+          [ProjectID]   = [_THISROW].[ProjectID],
+          [ReportDate]  = TODAY()
+        )
+      )
+    )
+  )
+  ```
+  - First clause: project must be active.
+  - Second clause: only the assigned super (or Admin) can start a report for the project. PMs / Director / Coordinator never see this button.
+  - Third clause is the load-bearing one: `SELECT` returns the list of `ReportID`s on this project for today; `ISBLANK(list)` is `TRUE` only when the list is empty (no row yet). When a row exists, the action is hidden — the super instead sees the existing report inside `Today's Report` and can edit it directly.
+- **Prominence:** Display prominently. This is the primary CTA on the `My Projects` card view inside `Super Home`. Each project card shows the action; tapping it opens the prefilled form.
+- **Icon:** `plus-circle`
+- **No confirmation prompt** — one tap to start.
+- **Cross-ref:** `04_views.md` → `Today's Report` "Default row" note + `DailyReports_Form` Position rules. The form view itself is hidden from the menu so Action 10 is the only path that opens it.

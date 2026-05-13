@@ -245,7 +245,7 @@ After the PM marks Reviewed:
 | Bot 4 overwrites super's manual values | Should not happen — `WeatherFetch.gs` only writes when fields are blank | Verify the `if (!tempIsBlank && !condIsBlank) return ...` branch wasn't edited away in `WeatherFetch.gs` |
 | Equipment / Trades not carrying forward to next day's report | New `ProjectID` or `Status` columns missing on the Sheet | Re-import `Equipment.csv` / `ReportTrades.csv` so AppSheet picks up the new headers, then `Data → Tables → Regenerate Schema` for both tables. Set `Status` Enum values to `On Site, Off Site` (no whitespace). |
 | "Off Site" check-square doesn't drop the row from today's report | Action 8 / 9 `Only_If` condition false, OR virtual column hasn't refreshed | Confirm super's email is in `Projects.SuperintendentEmail` for the row's `ProjectID`. Force a sync. |
-| Phantom report rows appearing at odd hours (e.g. 1 AM) | Almost certainly an auto-saved offline form from a phone that re-synced overnight, OR a leftover time-based Apps Script trigger from testing | Run the diagnostic in `HANDOFF.md` §14 (Daniel diagnostic checklist) — Audit History tells you the user/device in 30 seconds |
+| Phantom report rows appearing at odd hours (e.g. 1 AM) | Most often it's the **builder's own test rows** that the client doesn't recognise (this is what the 2026-05-10 incident turned out to be — see `HANDOFF.md` §14 findings). Less common: auto-saved offline form replay, or a leftover time-based Apps Script trigger from testing. | Open AppSheet → Manage → Monitor → Launch log analyzer; filter by table=DailyReports, uncheck Syncs, leave Adds checked. The `By User` column tells you who in 30 s. |
 | Trades / Equipment "Off Site" check visible to non-supers | Action 8 / 9 `Only_If` permits wrong role | Re-paste the `Only_If` from `03_actions.md` exactly. |
 
 ---
@@ -264,3 +264,94 @@ This step is a **delta**, not a full rebuild. Skip if you're building from scrat
 8. **PDF template** — update the binding of the Trades and Equipment tables to point at `[Related ReportTrades (still on site)]` and `[Related Equipment (still on site)]` per `04_pdf_template/GoogleDoc_template_setup.md` §4.
 9. **Form auto-save** — confirm `DailyReports_Form` requires explicit Save tap (not auto-commit on field blur). Mitigates the ghost-report incident.
 10. **Smoke test** — open today's report on PRJ-001 as James, mark a trade Off Site → confirm it disappears from the list. Open tomorrow's report → confirm the remaining trades appear.
+
+---
+
+## Step 18 — Apply 2026-05-11 client feedback (second delta)
+
+Same pattern as Step 17: a delta, not a rebuild. Apply on top of Step 17. Scope = Evan's 2026-05-11 email + screenshot ("8-item list + can't save + two-button request").
+
+**Pre-flight (must happen before any of the AppSheet edits below):**
+
+- Open the AppSheet editor for `Mode Daily Reports`. Look at the top-right of the editor toolbar. **If a `Save` button is highlighted (unsaved changes from a prior session), click it first.** Every change made in the editor preview lives in the editor's draft state until you click that top-right Save — and only then does it push to live users. This is the single most likely reason the 2026-05-10 fixes weren't visible to Evan when he tested on 2026-05-11.
+
+**Data cleanup (do this in the master Sheet before retesting save):**
+
+1. Open `MODE — Daily Reports DB` → `DailyReports` tab. Filter `ReportID` for any row with `2026-05-11` in it (the row that caused the duplicate-key error). Delete that row. Repeat for any other test rows for today on PRJ-001 that aren't intentional data.
+
+**AppSheet edits (apply in this order — each step references the spec doc that now contains the canonical config):**
+
+2. **`DailyReports_Form` is system-generated** and therefore not in the main menu by default. Verified in editor 2026-05-11 — system-generated views have no `Position` selector. The auto-`+` button on `Reports_Editable_By_Me` is the real entry path Evan used. To close it: `Data → Slices → Reports_Editable_By_Me → Adds allowed = OFF` AFTER Action 10 (step 3) is live. Do not flip this before Action 10 exists or no one can create new reports.
+3. **Create Action 10 `Start Today's Report`** on the `Projects` table per `03_actions.md` Action 10. After Action 10 exists, place it as the prominent action on the `My Projects` card view inside `Super Home` (`UX → Views → My Projects → Behavior → Card actions`). Then return to step 2 and disable adds on the slice.
+4. **Form save-button label:** AppSheet does not allow renaming the form's Save button per-view (verified 2026-05-11). Communicate to Evan in the reply that the form's `Save` button creates the draft, and the post-save detail view shows the `Save & Submit` action — functionally his two-button flow.
+5. **Project Name first, Notable Events last (in the create form).** `UX → Views → DailyReports_Form → View Options → Column order`. Drag `ProjectID` (which renders as "Project Name") to position 1. Drag `NotableEvents` to the last position. Save the view.
+6. **Project Name first, Notable Events last (in the detail view).** Same operation on `UX → Views → Today's Report → View Options → Column order`. Pin section order per `04_views.md` `Today's Report` section.
+7. **Hide ReportID, Status, IsLocked everywhere they show in the supers' view.** Re-verify the `Show?` formulas on `DailyReports.ReportID`, `DailyReports.Status`, `DailyReports.IsLocked` per `01_columns_and_formulas.md` §3. Then on `UX → Views → Today's Report → View Options → Column order`, explicitly remove `ReportID`, `Status`, `IsLocked`, `ProjectName` (virtual), `TotalHoursToday`, `DisplayName`, `Related ReportTrades By OriginReportID`, `Related Equipments By OriginReportID` from the visible column list. Column-level `Show?` rules apply, but the detail view's column-order list also has to not include them.
+8. **Add `Tasks Started Today` + `Tasks Completed Today` sections to the detail view.** `UX → Views → Today's Report → View Options → Column order`. The columns `Related Tasks (started today)` and `Related Tasks (completed today)` should be present in the order list (positions per `04_views.md` Today's Report sections 4 + 6). Toggle "Show empty group = ON" on both — they must render even with zero rows so the super sees the section exists.
+9. **Rename inline section headings.**
+   - `Data → Columns → DailyReports → Related Rentals → Display name = Rentals on Site Today`.
+   - `Data → Columns → DailyReports → Related Visitors → Display name = Visitors on Site Today`.
+   - `Data → Columns → DailyReports → Related Deliveries → Display name = Deliveries` (was `Delivery`).
+10. **Hide TimeEntries + Photos sections on the detail view.**
+    - `Data → Columns → DailyReports → Related TimeEntries → Show? = FALSE`.
+    - `Data → Columns → DailyReports → Related Photos → Show? = FALSE`.
+    - These hide only the on-screen sections. PDF + email logic still depend on the underlying tables, so do not delete columns or tables.
+11. **Save & publish.** Top-right `Save` in the AppSheet editor. Confirm the green "App is up to date" indicator before moving on. **This step is the difference between editor-draft and live; do not skip it.**
+
+**Verification (sign in as James to a clean browser profile, not the editor preview):**
+
+12. Land on `Super Home`. Confirm `My Projects` shows two project cards (PRJ-001, PRJ-004), each with a `Start Today's Report` button.
+13. Tap `Start Today's Report` on PRJ-001. Form opens. Confirm: Project Name = "Athlone Roof Overhang" at the very top; safety toggles next; Notable Events at the bottom; one `Save Draft` button at the bottom.
+14. Tap `Save Draft` with safety toggles at their defaults. Form should commit. Confirm you land on `Today's Report` (detail view) with no errors.
+15. On the detail view, confirm Report ID is not visible; status bar is not visible; sections in this order: General Info / Trades on Site Today / Tasks Started Today / Tasks Still in Progress / Tasks Completed Today / Equipment on Site Today / Rentals on Site Today / Visitors on Site Today / Deliveries / Safety / Notable Events / Save & Submit button.
+16. Tap `Start Today's Report` on PRJ-001 a SECOND time. The button should not render — the row now exists for today, the `Only_If` evaluates `FALSE`, and the duplicate-key path is structurally closed.
+17. Tap `Save & Submit`. Confirm row Status flips to Submitted in the Sheet within one sync cycle.
+
+✓ **Outcome:** Evan's 8 cosmetic items + the save blocker + the two-button request all resolved. Verified end-to-end as a real super, not in editor preview.
+
+---
+
+## Step 19 — Apply 2026-05-13 live-build delta (slice filters + column-level hides + Save & Submit simplification)
+
+A third delta. Discovered during the 2026-05-13 live test as Sam that the previous Step 17/18 build had several config gaps that weren't surfaced in any earlier smoke test. This step captures every fix applied 2026-05-13 — copy each to a fresh build or apply selectively if you've already done Steps 17 + 18.
+
+**Pre-flight:** the three slice filters and the column-level `Show?` formulas in this step were ALL empty in Daniel's live app even though the spec specified them in §02_slices.md, §01_columns_and_formulas.md, etc. Treat "spec says X" as "spec WANTS X" — verify the live app actually has it, don't assume.
+
+1. **Three slice filters** (`Data → Slices`). All three were empty in live; set them now:
+   - `My_Projects` row filter: `OR(USEREMAIL() = [SuperintendentEmail], IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role")))`. Update mode: Read-Only.
+   - `Reports_Editable_By_Me` row filter: `AND([Status] = "Draft", OR(USEREMAIL() = LOOKUP([ProjectID],"Projects","ProjectID","SuperintendentEmail"), IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role"))))`. Update mode: Updates ON, Adds ON, Deletes OFF.
+   - `Reports_Reviewable_By_Me` row filter: `AND([Status] = "Submitted", OR(USEREMAIL() = LOOKUP([ProjectID],"Projects","ProjectID","PMEmail"), USEREMAIL() = LOOKUP([ProjectID],"Projects","ProjectID","CoordinatorEmail"), USEREMAIL() = LOOKUP([ProjectID],"Projects","ProjectID","DirectorEmail"), IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role"))))`. Update mode: Updates ON, Adds OFF, Deletes OFF.
+2. **`DailyReports_Form` column order** (`UX → Views → DailyReports_Form → View Options → Column order → Manual`): drag `NotableEvents` to the very last position. Confirm `ProjectID` stays at position 1.
+3. **Column-level `Show?` formulas** on `DailyReports` columns (`Data → Columns → DailyReports`, pencil each):
+
+   **Group A — always hidden (`Show?` = `FALSE`):** `TotalHoursToday`, `DisplayName`, `ProjectName` (virtual), `IsLocked`, `Related Tasks` (no qualifier — generic audit list), `Related ReportTrades` (generic audit), `Related Equipments` (generic audit), `Related Equipments By OriginReportID`, `Related ReportTrades By OriginReportID`.
+
+   **Group B — Admin only (`Show?` = `IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role"))`):** `ReportID`, `Status`.
+
+   **Group C — Detail view only (`Show?` = `CONTEXT("ViewType") = "Detail"`):** `SuperintendentID`, `PreparedByEmail`, `Related Tasks (in progress)`, `Related Tasks (started today)`, `Related Tasks (completed today)`, `Related Deliveries`, `Related Rentals`, `Related Visitors`, `Related Equipment (still on site)`, `Related ReportTrades (still on site)`.
+
+4. **`ReportID` type guard.** When pasting the Group B formula on `ReportID`, AppSheet's UI sometimes auto-flips the Type dropdown to `Yes/No`. Confirm Type is `Text` before clicking Done. If wrong, set back to `Text` and confirm Initial value is `"RPT-" & TEXT([ReportDate],"YYYY-MM-DD") & "-" & [ProjectID]`.
+5. **`ProjectID` Show? guard.** If the column has `ISBLANK([_THIS])` in its Show? field, clear it (X button next to the formula). Otherwise Project Name disappears from the top of the form when prefilled via `LINKTOFORM`. Show? should be left as default (always show).
+6. **`Manager Inbox` Show If** (`UX → Views → Manager Inbox → Display → Show if`):
+   ```
+   OR(IN("ProjectManager", LOOKUP(USEREMAIL(),"Users","Email","Role")), IN("Coordinator", LOOKUP(USEREMAIL(),"Users","Email","Role")), IN("Director", LOOKUP(USEREMAIL(),"Users","Email","Role")), IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role")))
+   ```
+7. **`My Projects` Card view layout** (`UX → Views → My Projects`): set View type to `card` (not `gallery`), Layout = `list` (not `large`). In the layout's interactive demo, click `ACTION 1` text and select `Start Today's Report` from the dropdown. Leave Action 2 as default (`View Ref (CoordinatorID)`).
+8. **Action 10 `Start Today's Report`** on `Projects` table (`Behavior → Actions → New action`) — see `03_actions.md` Action 10 for full spec. Critical: `Only_If` must include the `ISBLANK(SELECT(DailyReports[ReportID], ...))` guard to prevent the duplicate-key error on a second tap.
+9. **Simplify `Save & Submit` Only_If.** Original spec had `USEREMAIL() = LOOKUP([ProjectID],"Projects","ProjectID","SuperintendentEmail")` inside the AND. In live testing 2026-05-13 this LOOKUP was returning the wrong project's super (USR-003 for PRJ-002 instead of USR-005), making the Only_If evaluate FALSE and hiding the button entirely. Replace the Only_If with:
+   ```
+   AND([Status] = "Draft", ISNOTBLANK([WeatherTemp]), ISNOTBLANK([WeatherConditions]))
+   ```
+   The auth check is redundant because the `Reports_Editable_By_Me` slice already filters to "user is super of the project, or Admin." See `03_actions.md` Action 1 for the full reasoning.
+10. **Verification — sign in as a SiteSuperintendent in editor preview** (`Preview app as` field, bottom-right of preview pane). Use a super who is actually assigned to a project — check the `Projects` sheet's `SuperintendentID` column to find one. James (`james@modeprojects.ca`) was NOT assigned to any project in the live data as of 2026-05-13; Sam (`sam@modeprojects.ca`) was. Walk through:
+    - Lands on `Super Home` ✓
+    - `My Projects` shows ONLY their project(s) ✓
+    - `Start Today's Report` button visible on each card ✓
+    - Tap it — form opens with Project Name first, Notable Events last ✓
+    - Save form — no duplicate-key error, lands on `Today's Report` detail view ✓
+    - Detail view: no ReportID, no Status bar, no IsLocked, no Time/Photos sections, all section headings renamed correctly, `Save & Submit` button at top ✓
+    - Tap `Save & Submit` (with weather populated) — confirmation, then row status flips to Submitted ✓
+    - Re-tap `Start Today's Report` on the same project — button is now hidden (row exists for today) ✓
+    - Try to reach Manager Inbox via menu — not present (Show If filters them out) ✓
+
+✓ **Outcome:** all of Evan's 2026-05-11 items resolved + slice-filter security + form/detail polish. The known remaining anomalies (Superintendent LOOKUP returning wrong row, `Related ReportTrades (still on site)` rendering inconsistently, `Recall to Draft 2` duplicate action, `Draff` typo on seed row) are tracked in the post-2026-05-13 punch list and don't block client testing.

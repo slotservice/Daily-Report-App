@@ -30,3 +30,9 @@ MODEPROJECTS_LogoSmall_Blue-02.png
 docs/GUIDE_FOR_BUILDER.md
 docs/IMPLEMENTATION_LOG.md
 docs/ANALYSIS.md
+docs/BUILDER_WALKTHROUGH.md
+HANDOFF.md
+
+# PC-to-PC handoff messages (local-only)
+5.11_prompt.md
+5.11_msg.md
