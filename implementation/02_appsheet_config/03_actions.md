@@ -51,6 +51,7 @@ Actions are the buttons users tap. Configure each in **Behavior → Actions**.
 - **Prominence:** Display prominently on the detail view for managers.
 - **Icon:** `check-circle`
 - **Triggers:** Bot 2 (see `05_automations.md`)
+- **Verified 2026-05-14:** Evan reported (item 8 of his 2026-05-14 batch) that supers can see this button. Investigation showed the live action's `Only_If` is character-identical to the spec above and correctly excludes supers — the four `OR` branches all evaluate to FALSE for a pure-super email (no PM/Director/Coord match, no Admin role). Most likely Evan saw the button on his own screen (he holds Director+Super+Admin, so he passes via Director and Admin) and assumed supers would too. Pending: Daniel to verify via Preview-as-James (a pure super on PRJ-001/PRJ-004) that the button is in fact hidden. If hidden → respond to Evan with that confirmation; no spec change. If still visible → deeper bug, dig into prominence/slice.
 
 ## Action 3: `Mark Task Completed` (Tasks)
 
@@ -225,3 +226,96 @@ Per Evan 2026-05-11 (item 9). Replaces the loose `LINKTOFORM(...)` CTA that prev
 - **Icon:** `plus-circle`
 - **No confirmation prompt** — one tap to start.
 - **Cross-ref:** `04_views.md` → `Today's Report` "Default row" note + `DailyReports_Form` Position rules. The form view itself is hidden from the menu so Action 10 is the only path that opens it.
+
+## Action 11: `Add Trade` (DailyReports → ReportTrades; nav-add)
+
+Per Evan 2026-05-14 (item 1). The Trades on Site Today section was missing its inline `+ Add` button in the live build — Equipment had its parallel `+ Add Equipment` action wired up but Trades did not. Action 11 fills that gap.
+
+Mirrors Action 4 (`Add Task Started Today`) in shape: parent-table nav-add action that LINKTOFORMs to the child form with all the carry-forward columns prefilled.
+
+- **Display name:** Add Trade
+- **For a record of this table:** `DailyReports`
+- **Do this:** `App: go to another view within this app`
+- **Target:**
+  ```
+  LINKTOFORM(
+    "ReportTrades_Form",
+    "ReportID", [ReportID],
+    "ProjectID", [ProjectID],
+    "Status", "On Site",
+    "OriginReportID", [ReportID]
+  )
+  ```
+- **Only if this condition is true:**
+  ```
+  AND(
+    [Status] <> "Reviewed",
+    OR(
+      USEREMAIL() = LOOKUP([ProjectID],"Projects","ProjectID","SuperintendentEmail"),
+      IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role"))
+    )
+  )
+  ```
+  - First clause: don't allow add after the report is locked (Reviewed).
+  - Second clause: only the project's super (or Admin) can add trades — matches the pattern for Equipment + Task adds. Director/PM/Coordinator do not see this button; if they want to add a trade they ask the super.
+- **Prominence:** Display inline on the Trades on Site Today section of `Today's Report`. Attach by setting the action's `Prominence` to `Display inline` and binding it to the inline reference column `[Related ReportTrades (still on site)]` in the Detail view editor.
+- **Icon:** `plus-circle`
+- **No confirmation prompt** — one tap to open the prefilled form.
+
+## Action 12: `Mark Rental Returned` (Rentals)
+
+Per Evan 2026-05-14 (item 7, option a). Identical pattern to Action 8 (Mark Trade Off Site) and Action 9 (Mark Equipment Off Site). Single-tap inline check that drops the rental off the carry-forward list once it has been returned to the supplier.
+
+- **Display name:** Mark Returned
+- **For a record of this table:** `Rentals`
+- **Do this:** `Data: set the values of some columns in this row`
+- **Set these columns:**
+  - `Status` ← `"Returned"`
+  - `ReturnedDate` ← `TODAY()`
+- **Only if this condition is true:**
+  ```
+  AND(
+    [Status] = "On Site",
+    OR(
+      USEREMAIL() = LOOKUP([ProjectID],"Projects","ProjectID","SuperintendentEmail"),
+      IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role"))
+    )
+  )
+  ```
+- **Prominence:** Inline on the **Rentals on Site Today** section of `Today's Report`. Attach to the inline reference column `[Related Rentals (still on site)]` in the Detail view editor.
+- **Display style:** `Icon` (not button) — shows as a single tappable check beside each rental row, mirroring the visual language of Mark Task Completed / Mark Equipment Off Site.
+- **Icon:** `check-square`
+- **Behavior on tap:** No confirmation prompt — one-tap-fast, recoverable by Admin direct-edit if a misclick happens.
+
+## Action 13: `Add Rental` (DailyReports → Rentals; nav-add)
+
+Per Evan 2026-05-14 (item 7, option a). Parallel of Action 11 (`Add Trade`) and Action 4 (`Add Task Started Today`). Parent-table nav-add action that LINKTOFORMs to `Rentals_Form` with the carry-forward columns prefilled.
+
+- **Display name:** Add Rental
+- **For a record of this table:** `DailyReports`
+- **Do this:** `App: go to another view within this app`
+- **Target:**
+  ```
+  LINKTOFORM(
+    "Rentals_Form",
+    "ReportID", [ReportID],
+    "ProjectID", [ProjectID],
+    "Status", "On Site",
+    "OriginReportID", [ReportID]
+  )
+  ```
+- **Only if this condition is true:**
+  ```
+  AND(
+    [Status] <> "Reviewed",
+    OR(
+      USEREMAIL() = LOOKUP([ProjectID],"Projects","ProjectID","SuperintendentEmail"),
+      IN("Admin", LOOKUP(USEREMAIL(),"Users","Email","Role"))
+    )
+  )
+  ```
+  - First clause: don't allow add after the report is locked (Reviewed).
+  - Second clause: only the project's super (or Admin) can add rentals — matches the pattern for Equipment + Trade + Task adds. Director/PM/Coordinator do not see this button; if they want to add a rental they ask the super.
+- **Prominence:** Display inline on the Rentals on Site Today section of `Today's Report`. Attach by setting the action's `Prominence` to `Display inline` and binding it to the inline reference column `[Related Rentals (still on site)]` in the Detail view editor.
+- **Icon:** `plus-circle`
+- **No confirmation prompt** — one tap to open the prefilled form.

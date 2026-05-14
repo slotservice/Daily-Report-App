@@ -55,7 +55,7 @@ The parent virtual columns to bind each table to:
 | Tasks Still in Progress | `[Related Tasks (in progress)]` |
 | Tasks Completed Today | `[Related Tasks (completed today)]` |
 | Equipment On Site Today | `[Related Equipment (still on site)]` *(carry-forward, per Evan 2026-05-10 item 12)* |
-| Rentals | `[Related Rentals]` |
+| Rentals | `[Related Rentals (still on site)]` *(carry-forward, per Evan 2026-05-14 item 7 option a — was `[Related Rentals]` REF_ROWS until 2026-05-14; the new virtual column filters to rentals where Status = "On Site". The Doc template `<<Start: [Related Rentals]>>` token must be updated to `<<Start: [Related Rentals (still on site)]>>` for the PDF Rentals block to show the carry-forward list rather than just per-report rentals.)* |
 | Visitors | `[Related Visitors]` *(5 columns as of 2026-05-13 — header row: `Name \| Company \| Purpose \| People \| Time`. `Name` was added per Evan's 2026-05-13 email follow-up.)* |
 | Deliveries | `[Related Deliveries]` |
 
