@@ -19,7 +19,14 @@ Mirror the HTML reference (`DailyReportTemplate.html`):
 - **Title row:** `Daily Site Report` (16pt) on the left, a 1×1 table containing `Date: <<ReportDate>>` on the right.
 - **Project line:** `Project: <<ProjectCode>> — <<ProjectName>>` in 11.5pt bold.
 
-For each section that appears in the source PDF (General Info, Tasks Started Today, Tasks Still in Progress, Tasks Completed Today, Equipment, Rentals, Visitors, Deliveries, Safety, Notable Events) insert a table whose first row is a navy-bg / white-text section heading spanning all columns.
+For each section that appears in the source PDF (General Info, Crew & Hours, Trades on Site Today, Tasks Started Today, Tasks in Progress, Tasks Completed Today, Equipment on Site Today, Rentals on Site Today, Visitors, Deliveries, Photos, Safety, Notable Events) insert a table whose first row is a navy-bg / white-text section heading spanning all columns.
+
+> **The navy heading-band text must match the app's section Display Names** (per Evan 2026-05-14 items 2-5). These heading bands are static text in the Doc — they are NOT driven by the AppSheet column Display Names, so renaming a column in AppSheet does not update the PDF. When a section is renamed in the app, the corresponding Doc heading band must be hand-edited to match. Current required wording:
+> - `Trades on Site Today` (was `Trades`)
+> - `Tasks in Progress` (was `Tasks Still in Progress`)
+> - `Tasks Completed Today`
+> - `Equipment on Site Today` (was `Equipment`)
+> - `Rentals on Site Today` (was `Rentals`)
 
 ## 3. Inline placeholders
 
